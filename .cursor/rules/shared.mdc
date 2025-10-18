@@ -3,9 +3,9 @@ description:
 globs: 
 alwaysApply: true
 ---
-# AI Rules for {app-name}
+# AI Rules for Housework Master
 
-{project-description}
+Housework Master is a web application designed to help users maintain regular household chores through intelligent task management and AI-powered motivation.
 
 ## Tech Stack
 

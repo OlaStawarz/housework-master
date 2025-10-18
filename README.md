@@ -1,94 +1,142 @@
-# 10x Astro Starter
+# Housework Master
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+Web app to help users stay on top of household chores with recurring-task management and AI-powered motivational messages.
+
+## Table of Contents
+
+1. [Project Description](#project-description)  
+2. [Tech Stack](#tech-stack)  
+3. [Getting Started Locally](#getting-started-locally)  
+   - [Prerequisites](#prerequisites)  
+   - [Installation & Setup](#installation--setup)  
+4. [Available Scripts](#available-scripts)  
+5. [Project Scope](#project-scope)  
+6. [Project Status](#project-status)  
+7. [License](#license)  
+
+---
+
+## Project Description
+
+Housework Master is a modern web application designed to help individuals maintain consistent household routines. It offers:
+
+- Definition and grouping of recurring tasks into “spaces” (rooms)  
+- An aggregated dashboard highlighting overdue and upcoming tasks  
+- A simple “I’ll do it tomorrow” postponement feature  
+- AI-generated motivational messages contextualized to each task name  
+
+By combining straightforward task management with contextual encouragement, Housework Master tackles both forgetting and procrastination.
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+- **Frontend**  
+  - Astro 5 
+  - React 19  
+  - TypeScript 5
+  - Tailwind 4
+  - Shadcn/ui 
 
-## Prerequisites
+- **Backend**  
+  - Supabase (PostgreSQL database, authentication)  
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+- **AI & Motivation System**  
+  - Openrouter.ai (access to OpenAI/Anthropic/Google models, budget controls)  
 
-## Getting Started
+- **CI/CD & Hosting**  
+  - GitHub Actions (pipelines)  
+  - DigitalOcean (Docker-based hosting)  
 
-1. Clone the repository:
+## Getting Started Locally
+
+### Prerequisites
+
+- [Node.js 22.14.0](https://nodejs.org/) (via nvm recommended)  
+- A Supabase project with `SUPABASE_URL` & `SUPABASE_KEY`  
+- An Openrouter.ai API key (`OPENROUTER_API_KEY`)
+
+### Installation & Setup
 
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
+# Clone the repo
+git clone https://github.com/OlaStawarz/housework-master.git
+cd housework-master
 
-2. Install dependencies:
+# Use the specified Node version
+nvm install
+nvm use
 
-```bash
+# Install dependencies
 npm install
+
+# Create a .env file
+cat <<EOF > .env
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
+OPENROUTER_API_KEY=your_openrouter_api_key
+EOF
 ```
 
-3. Run the development server:
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-4. Build for production:
-
-```bash
-npm run build
-```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+- `npm run dev`  
+  Start the Astro development server.
 
-## Project Structure
+- `npm run build`  
+  Build the production site.
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+- `npm run preview`  
+  Preview the production build locally.
 
-## AI Development Support
+- `npm run astro`  
+  Run the Astro CLI.
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+- `npm run lint`  
+  Run ESLint across the codebase.
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+- `npm run lint:fix`  
+  Auto-fix lint errors.
 
-### Cursor IDE
+- `npm run format`  
+  Format code with Prettier.
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
+## Project Scope
 
-### GitHub Copilot
+- **User Account Management**  
+  - Email/password registration, login, logout, account deletion
 
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
+- **Space Management**  
+  - Create, view, and delete “spaces” (rooms)
 
-### Windsurf
+- **Task Management**  
+  - Add tasks via predefined templates or manually  
+  - Edit task frequency (days/months)  
+  - Mark tasks as completed and delete them
 
-The `.windsurfrules` file contains AI configuration for Windsurf.
+- **Dashboard & Navigation**  
+  - Aggregated “Overdue” and “Upcoming” sections  
+  - Chronologically sorted lists  
+  - Per-space task view
 
-## Contributing
+- **Task Postponement**  
+  - “I’ll do it tomorrow” with a maximum of 3 postponements per cycle
 
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+- **AI Motivation**  
+  - Contextual, AI-generated motivational messages based on task names
+
+## Project Status
+
+🚧 **MVP & Active Development**
+
+This project is currently in its MVP phase.
 
 ## License
 
-MIT
+This project is licensed under the [MIT License](LICENSE).  
