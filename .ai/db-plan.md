@@ -64,7 +64,7 @@ Przechowuje cykliczne zadania przypisane do przestrzeni.
 | `recurrence_value` | INTEGER | NOT NULL, CHECK(recurrence_value > 0) | Liczba dla cykliczności (np. 7, 14, 2) |
 | `recurrence_unit` | VARCHAR(10) | NOT NULL, CHECK(recurrence_unit IN ('days', 'months')) | Jednostka cykliczności: 'days' lub 'months' |
 | `due_date` | TIMESTAMP WITH TIME ZONE | NOT NULL | Termin wykonania zadania |
-| `status` | VARCHAR(20) | NOT NULL, DEFAULT 'pending', CHECK(status IN ('pending', 'completed', 'postponed', 'overdue')) | Status zadania |
+| `status` | VARCHAR(20) | NOT NULL, DEFAULT 'pending', CHECK(status IN ('pending', 'postponed')) | Status zadania |
 | `postponement_count` | INTEGER | NOT NULL, DEFAULT 0, CHECK(postponement_count BETWEEN 0 AND 3) | Licznik odroczeń dla bieżącego cyklu (max 3) |
 | `last_completed_at` | TIMESTAMP WITH TIME ZONE | NULL | Data i czas ostatniego wykonania zadania |
 | `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Data i czas utworzenia rekordu |
@@ -101,7 +101,7 @@ Przechowuje komunikaty motywacyjne generowane przez AI dla zadań.
 |---------|-----|--------------|------|
 | `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unikalny identyfikator komunikatu |
 | `task_id` | UUID | NOT NULL, FOREIGN KEY → tasks(id) ON DELETE CASCADE | Zadanie, dla którego wygenerowano komunikat |
-| `message_text` | TEXT | NOT NULL, CHECK(length(message_text) <= 500) | Treść komunikatu motywacyjnego (max 500 znaków) |
+| `message_text` | TEXT | NOT NULL, CHECK(length(message_text) <= 150) | Treść komunikatu motywacyjnego (max 150 znaków) |
 | `generated_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Data i czas wygenerowania komunikatu |
 
 ---
@@ -185,10 +185,18 @@ UUID zostały wybrane zamiast sekwencyjnych liczb całkowitych ze względu na:
 
 ### 5.2. Status Zadania jako ENUM
 Pole `status` używa ograniczenia CHECK z wartościami:
-- `pending` - zadanie oczekuje na wykonanie
-- `completed` - zadanie zostało wykonane
-- `overdue` - zadanie po terminie (ustawiane automatycznie przez trigger)
-- `postponed` - zadanie zostało odroczone
+- `pending` - zadanie aktywne, oczekuje na wykonanie w bieżącym cyklu
+- `postponed` - zadanie zostało odroczone (do 3 razy)
+
+**Uwaga o statusach pominiętych:**
+
+**`completed`** - Status celowo pominięty. W systemie zadań cyklicznych "wykonanie" to akcja, nie stan trwały. Gdy użytkownik oznaczy zadanie jako wykonane, system automatycznie:
+1. Zapisuje `last_completed_at = NOW()`
+2. Przelicza nowy `due_date` (dodaje `recurrence_value` jednostek czasu)
+3. Resetuje `postponement_count = 0`
+4. Pozostawia status jako `pending` (zadanie czeka na kolejny cykl)
+
+**`overdue`** - Status celowo pominięty. Stan "przeterminowane" jest wyliczany w czasie zapytania (query-time) jako logiczny widok, a nie fizyczny status w bazie. Zadanie jest traktowane jako overdue gdy `due_date < NOW()` i `status IN ('pending', 'postponed')`.
 
 ### 5.3. Mechanizm Odkładania Zadań
 Kolumna `postponement_count` z ograniczeniem `CHECK(postponement_count BETWEEN 0 AND 3)` implementuje limit 3 odroczeń. Po wykonaniu zadania licznik jest resetowany do 0.
@@ -200,7 +208,7 @@ Zamiast przechowywać bezpośrednio cron expression, system używa prostszego mo
 - Przykład: co 7 dni = `{recurrence_value: 7, recurrence_unit: 'days'}`
 
 ### 5.5. Komunikaty Motywacyjne
-Tabela `motivational_messages` przechowuje historię wygenerowanych komunikatów. Maksymalna długość komunikatu to 500 znaków.
+Tabela `motivational_messages` przechowuje historię wygenerowanych komunikatów. Maksymalna długość komunikatu to 150 znaków.
 
 ### 5.6. CASCADE DELETE
 Wszystkie relacje używają `ON DELETE CASCADE`:

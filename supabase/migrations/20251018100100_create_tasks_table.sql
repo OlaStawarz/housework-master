@@ -29,7 +29,7 @@ create table public.tasks (
   recurrence_value integer not null check(recurrence_value > 0),
   recurrence_unit varchar(10) not null check(recurrence_unit in ('days', 'months')),
   due_date timestamp with time zone not null,
-  status varchar(20) not null default 'pending' check(status in ('pending', 'completed', 'postponed', 'overdue')),
+  status varchar(20) not null default 'pending' check(status in ('pending', 'postponed')),
   postponement_count integer not null default 0 check(postponement_count between 0 and 3),
   last_completed_at timestamp with time zone null,
   created_at timestamp with time zone not null default now(),
@@ -48,7 +48,7 @@ comment on column public.tasks.name is 'immutable task name set at creation';
 comment on column public.tasks.recurrence_value is 'numeric value for recurrence (e.g., 7 for weekly, 2 for bimonthly)';
 comment on column public.tasks.recurrence_unit is 'time unit for recurrence: "days" or "months"';
 comment on column public.tasks.due_date is 'deadline for task completion';
-comment on column public.tasks.status is 'current task status: pending, completed, postponed, or overdue';
+comment on column public.tasks.status is 'current task status: pending (active) or postponed (delayed). overdue state is computed at query-time when due_date < now';
 comment on column public.tasks.postponement_count is 'number of times task has been postponed in current cycle (max 3)';
 comment on column public.tasks.last_completed_at is 'timestamp of most recent completion, null if never completed';
 comment on column public.tasks.created_at is 'timestamp when task was created';
