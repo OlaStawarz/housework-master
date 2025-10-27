@@ -110,11 +110,11 @@ Auth is backed by Supabase Auth.
 - Errors: 401, 404 (not found or not owned), 500.
 
 4) PATCH /api/spaces/{spaceId}
-- Description: Update `name`, `space_type`, or `icon`. Enforces unique per user.
+- Description: Update `name` or `icon`. Enforces unique name per user. Note: `space_type` is immutable after creation as it's used only for initial task template selection.
 - Headers: Authorization
 - Request JSON:
 ```json
-{ "name": "string?", "space_type": "string?", "icon": "string|null?" }
+{ "name": "string?", "icon": "string|null?" }
 ```
 - Response JSON (200): updated space.
 - Errors: 400, 401, 404, 409 (duplicate), 500.

@@ -92,10 +92,17 @@ export interface CreateSpaceParams {
   command: CreateSpaceCommand;
 }
 
+/** Parametry dla aktualizacji przestrzeni w serwisie */
+export interface UpdateSpaceParams {
+  userId: string;
+  spaceId: string;
+  command: UpdateSpaceCommand;
+}
+
 /** Payload do aktualizacji przestrzeni */
 export type UpdateSpaceCommand = Partial<Pick<
   TablesUpdate<'spaces'>,
-  'name' | 'space_type' | 'icon'
+  'name' | 'icon'
 >>;
 
 /** Payload do utworzenia pojedynczego zadania */
