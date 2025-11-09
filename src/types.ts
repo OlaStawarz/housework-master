@@ -46,7 +46,9 @@ export interface BulkCreateTaskErrorDto {
 /** Wynik pojedynczego elementu masowego tworzenia zadania */
 export type BulkCreateTaskResultDto =
   | { status: 201; task: TaskDto }
-  | { status: 409; error: BulkCreateTaskErrorDto };
+  | { status: 404; error: BulkCreateTaskErrorDto }
+  | { status: 409; error: BulkCreateTaskErrorDto }
+  | { status: 500; error: BulkCreateTaskErrorDto };
 
 /** Odpowiedź 207 Multi-Status dla bulk-from-templates */
 export interface BulkCreateTasksResponseDto {
@@ -105,21 +107,57 @@ export type UpdateSpaceCommand = Partial<Pick<
   'name' | 'icon'
 >>;
 
+/** Parametry dla listowania szablonów zadań w serwisie */
+export interface ListTaskTemplatesParams {
+  spaceType?: string;
+  sort?: string;
+}
+
+/** Parametry query dla GET /api/tasks */
+export interface GetTasksQuery {
+  space_id?: string;
+  status?: TaskStatus;
+  due_before?: string;
+  due_after?: string;
+  page?: number;
+  limit?: number;
+  sort?: 'due_date.asc' | 'due_date.desc' | 'recurrence.asc' | 'recurrence.desc';
+}
+
+/** Parametry dla funkcji getTasks w serwisie */
+export interface GetTasksParams {
+  userId: string;
+  filters: GetTasksQuery;
+}
+
+/** Parametry dla masowego tworzenia zadań z szablonów */
+export interface BulkCreateTasksParams {
+  userId: string;
+  spaceId: string;
+  command: BulkCreateTasksCommand;
+}
+
 /** Payload do utworzenia pojedynczego zadania */
 export type CreateTaskCommand = Pick<
   TablesInsert<'tasks'>,
   'space_id' | 'name' | 'recurrence_value' | 'recurrence_unit'
 >;
 
+/** Parametry dla utworzenia zadania w serwisie */
+export interface CreateTaskParams {
+  userId: string;
+  command: CreateTaskCommand;
+}
+
 /** Pojedynczy element w bulk-from-templates */
 export type BulkCreateTaskItemCommand = {
-  template_id: TaskTemplateDto['id'];
-  override_recurrence_value: number | null;
-  override_recurrence_unit: RecurrenceUnit | null;
+  override_recurrence_value?: number | null;
+  override_recurrence_unit?: RecurrenceUnit | null;
 };
 
 /** Payload do masowego tworzenia z szablonów */
 export type BulkCreateTasksCommand = {
+  template_id: TaskTemplateDto['id'];
   items: BulkCreateTaskItemCommand[];
 };
 

@@ -134,7 +134,7 @@ Auth is backed by Supabase Auth.
   - `space_id` (optional)
   - `status` in `pending,postponed` (optional, filters by physical status; to get overdue tasks use `due_before=now`)
   - `due_before` / `due_after` (ISO timestamps)
-  - `page`, `limit`, `sort` (default: `due_date.asc`)
+  - `page`, `limit`, `sort` (default: `recurrence.asc`)
 - Response JSON (200):
 ```json
 {
@@ -152,14 +152,7 @@ Auth is backed by Supabase Auth.
 ```
 - Errors: 400 (invalid filters), 401, 500.
 
-2) GET /api/spaces/{spaceId}/tasks
-- Description: List tasks for a specific space.
-- Headers: Authorization
-- Query: `status`, `page`, `limit`, `sort` (default: `due_date.asc`).
-- Response JSON: same shape as GET /api/tasks.
-- Errors: 401, 404 (space not owned), 500.
-
-3) POST /api/tasks
+2) POST /api/tasks
 - Description: Create a custom task.
 - Headers: Authorization
 - Request JSON:
@@ -177,7 +170,7 @@ Auth is backed by Supabase Auth.
 - Response JSON (201): created task record.
 - Errors: 400 (validation), 401, 404 (space not owned), 409 (duplicate), 500.
 
-4) POST /api/spaces/{spaceId}/tasks/bulk-from-templates
+3) POST /api/spaces/{spaceId}/tasks/bulk-from-templates
 - Description: Batch-create tasks from templates for a space.
 - Headers: Authorization
 - Request JSON:
@@ -208,13 +201,13 @@ Auth is backed by Supabase Auth.
 ```
 - Errors: 400 (invalid payload), 401, 404 (space or template not found), 500.
 
-5) GET /api/tasks/{taskId}
+4) GET /api/tasks/{taskId}
 - Description: Fetch a single task owned by the user.
 - Headers: Authorization
 - Response JSON (200): task record.
 - Errors: 401, 404, 500.
 
-6) PATCH /api/tasks/{taskId}
+5) PATCH /api/tasks/{taskId}
 - Description: Update recurrence only (`recurrence_value`, `recurrence_unit`). Name is immutable by design.
 - Headers: Authorization
 - Request JSON:
@@ -225,13 +218,13 @@ Auth is backed by Supabase Auth.
 - Response JSON (200): updated task.
 - Errors: 400, 401, 404, 422 (invalid recurrence), 500.
 
-7) DELETE /api/tasks/{taskId}
+6) DELETE /api/tasks/{taskId}
 - Description: Delete a task.
 - Headers: Authorization
 - Response: 204 No Content.
 - Errors: 401, 404, 500.
 
-8) POST /api/tasks/{taskId}/complete
+7) POST /api/tasks/{taskId}/complete
 - Description: Mark task as completed and start next cycle.
 - Headers: Authorization
 - Request JSON (optional):
@@ -243,10 +236,7 @@ Auth is backed by Supabase Auth.
   - Reset `postponement_count = 0`.
   - Compute new `due_date = last_completed_at + recurrence_value * unit`.
   - Status remains `pending` (no 'completed' status for recurring tasks).
-- Response JSON (200): updated task with new due_date.
-```json
-{ "task": {"id":"uuid","status":"pending","due_date":"iso","last_completed_at":"iso","postponement_count":0} }
-```
+- Response: 204 No Content.
 - Errors: 401, 404, 500.
 - Note: No 409 for "already completed" - completing a task simply advances its cycle. If called multiple times rapidly, last call wins.
 
@@ -258,7 +248,7 @@ Auth is backed by Supabase Auth.
   - Increment `postponement_count`.
   - Update `due_date = due_date + 1 day`.
   - Change `status` to `postponed`.
-- Response JSON (200): updated task.
+- Response 204 No Content.
 - Errors: 401, 404, 422 (limit reached), 409 (not eligible), 500.
 
 ### 2.6 Motivational Messages
@@ -296,8 +286,8 @@ Auth is backed by Supabase Auth.
   - `days_ahead`: integer (default: 7) for `upcoming`
   - `page`, `limit`, `sort` (default: `due_date.asc`)
 - Behavior:
-  - Overdue: tasks where `due_date < now` and `status in (pending, postponed)` (computed at query-time).
-  - Upcoming: tasks with `due_date ≤ now + days_ahead` and `status in (pending, postponed)`.
+  - Overdue: tasks where `due_date < now` (computed at query-time).
+  - Upcoming: tasks with `due_date ≤ now + days_ahead`.
 - Response JSON (200): same list shape as GET /api/tasks.
 - Errors: 400, 401, 500.
 
