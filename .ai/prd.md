@@ -205,7 +205,24 @@ Aplikacja ma na celu rozwiązanie tych problemów poprzez stworzenie prostego sy
 - Na liście "Zbliżające się" znajdują się zadania, których termin wkrótce nadejdzie, posortowane od najpilniejszego.
 - Każdy element listy zawiera: nazwę zadania, nazwę przestrzeni oraz informację o terminie (np. "Zostały 2 dni", "Po terminie 5 dni").
 
-#### US-013: Przeglądanie zadań w konkretnej przestrzeni
+#### US-013: Przeglądanie zadań na liście przestrzeni
+
+**Opis:** Jako użytkownik, chcę móc zobaczyć przegląd wszystkich moich przestrzeni wraz z kluczowymi informacjami i liczbą przypisanych do nich zadań, aby mieć szybki wgląd w organizację domu i łatwo przechodzić do szczegółów wybranej przestrzeni.
+
+**Kryteria akceptacji:**
+- Dostępny jest dedykowany widok „Przestrzenie” dostępny z głównej nawigacji.
+- Widok wyświetla siatkę wszystkich stworzonych przez użytkownika przestrzeni.
+- Każda karta przestrzeni prezentuje:
+  - Ikonę emoji reprezentującą przestrzeń,
+  - Nazwę przestrzeni
+- Każda karta posiada interaktywny element (np. kliknięcie w kartę lub przycisk), który przenosi do szczegółowego widoku tej przestrzeni.
+- Dostępny jest przycisk „Dodaj nową przestrzeń”, który otwiera modal tworzenia przestrzeni.
+- Widok obsługuje responsywny grid i jest dostępny również na urządzeniach mobilnych.
+- W stanie pustym (brak przestrzeni) wyświetlany jest onboardingowy komunikat z CTA do utworzenia pierwszej przestrzeni.
+- Wszystkie interaktywne elementy posiadają poprawne oznaczenia dostępności (ARIA, focus management).
+
+
+#### US-014: Przeglądanie zadań w konkretnej przestrzeni
 
 **Opis:** Jako użytkownik, chcę móc wejść do wybranej przestrzeni (np. "Kuchnia"), aby zobaczyć listę zadań przypisanych tylko do niej.
 
@@ -215,7 +232,7 @@ Aplikacja ma na celu rozwiązanie tych problemów poprzez stworzenie prostego sy
 - Widok przestrzeni wyświetla listę wszystkich zadań do niej przypisanych, posortowaną chronologicznie.
 - Z tego widoku mogę zarządzać zadaniami (np. oznaczać jako wykonane).
 
-#### US-014: Oznaczanie zadania jako wykonane
+#### US-015: Oznaczanie zadania jako wykonane
 
 **Opis:** Jako użytkownik, chcę móc łatwo oznaczyć zadanie jako wykonane, aby zaktualizować jego status i poczuć satysfakcję.
 
@@ -225,7 +242,7 @@ Aplikacja ma na celu rozwiązanie tych problemów poprzez stworzenie prostego sy
 - Na ekranie pojawia się krótki komunikat zwrotny (np. "Zrobione!").
 - Nowy termin wykonania zadania jest automatycznie obliczany na podstawie jego cykliczności i daty wykonania.
 
-#### US-015: Odkładanie zadania
+#### US-016: Odkładanie zadania
 
 **Opis:** Jako użytkownik, gdy nie mam czasu wykonać zadania w terminie, chcę mieć możliwość odłożenia go o jeden dzień, aby nie widniało jako przeterminowane.
 
@@ -234,7 +251,7 @@ Aplikacja ma na celu rozwiązanie tych problemów poprzez stworzenie prostego sy
 - Po kliknięciu przycisku, termin wykonania zadania jest przesuwany o 24 godziny.
 - Licznik użyć tej opcji dla danego cyklu zadania jest inkrementowany.
 
-#### US-016: Zablokowana opcja odkładania zadania
+#### US-017: Zablokowana opcja odkładania zadania
 
 **Opis:** Jako użytkownik, który już trzykrotnie odłożył zadanie, chcę zobaczyć, że opcja "Zrobię to jutro" jest niedostępna, abym zrozumiał, że muszę podjąć działanie.
 
@@ -242,7 +259,7 @@ Aplikacja ma na celu rozwiązanie tych problemów poprzez stworzenie prostego sy
 - Po trzecim z rzędu użyciu przycisku "Zrobię to jutro" dla danego zadania, przycisk ten staje się nieaktywny (np. wyszarzony).
 - Po wykonaniu zadania (lub po rozpoczęciu nowego cyklu), licznik użyć jest resetowany, a przycisk znów staje się aktywny.
 
-#### US-017: Otrzymywanie komunikatu motywacyjnego
+#### US-018: Otrzymywanie komunikatu motywacyjnego
 
 **Opis:** Jako użytkownik, chcę zobaczyć motywujący komunikat przy zadaniu, którego termin się zbliża lub minął, aby zachęciło mnie to do działania.
 
