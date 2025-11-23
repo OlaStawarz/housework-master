@@ -207,7 +207,7 @@ Aplikacja ma na celu rozwiązanie tych problemów poprzez stworzenie prostego sy
 
 #### US-013: Przeglądanie zadań na liście przestrzeni
 
-**Opis:** Jako użytkownik, chcę móc zobaczyć przegląd wszystkich moich przestrzeni wraz z kluczowymi informacjami i liczbą przypisanych do nich zadań, aby mieć szybki wgląd w organizację domu i łatwo przechodzić do szczegółów wybranej przestrzeni.
+**Opis:** Jako użytkownik, chcę móc zobaczyć przegląd wszystkich moich przestrzeni, aby mieć szybki wgląd w organizację domu i łatwo przechodzić do szczegółów wybranej przestrzeni.
 
 **Kryteria akceptacji:**
 - Dostępny jest dedykowany widok „Przestrzenie” dostępny z głównej nawigacji.
