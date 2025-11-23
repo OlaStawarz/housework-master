@@ -153,6 +153,7 @@ export async function createSpace(
   const { data: newSpace, error: insertError } = await supabase
     .from('spaces')
     .insert({ user_id: userId, name, space_type, icon })
+    .select()
     .single();
   if (insertError) {
     if ((insertError as any).code === '23505') {

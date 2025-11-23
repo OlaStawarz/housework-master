@@ -103,31 +103,27 @@ export async function bulkCreateFromTemplates(
     throw new SpaceNotFoundForBulkError();
   }
 
-  // Pobranie szablonu (template_id jest wspólny dla wszystkich zadań)
-  const { data: template, error: templateError } = await supabase
-    .from('task_templates')
-    .select('id, task_name, default_recurrence_value, default_recurrence_unit')
-    .eq('id', command.template_id)
-    .single();
-
-  if (templateError || !template) {
-    // Jeśli szablon nie istnieje, wszystkie items failed
-    for (let i = 0; i < command.items.length; i++) {
-      results.push({
-        status: 404,
-        error: {
-          code: 'template_not_found',
-          message: `Szablon z ID '${command.template_id}' nie istnieje`,
-          template_id: command.template_id,
-        },
-      });
-    }
-    return { results };
-  }
-
-  // Przetwarzanie każdej pozycji - wszystkie używają tego samego szablonu
+  // Przetwarzanie każdej pozycji - każda ma własny template_id
   for (const item of command.items) {
     try {
+      // Pobranie szablonu dla tego konkretnego item
+      const { data: template, error: templateError } = await supabase
+        .from('task_templates')
+        .select('id, task_name, default_recurrence_value, default_recurrence_unit')
+        .eq('id', item.template_id)
+        .single();
+
+      if (templateError || !template) {
+        results.push({
+          status: 404,
+          error: {
+            code: 'template_not_found',
+            message: `Szablon z ID '${item.template_id}' nie istnieje`,
+            template_id: item.template_id,
+          },
+        });
+        continue;
+      }
 
       // Ustalenie wartości cykliczności (override lub default)
       const recurrenceValue = item.override_recurrence_value ?? template.default_recurrence_value;
@@ -160,7 +156,7 @@ export async function bulkCreateFromTemplates(
             error: {
               code: 'duplicate_task',
               message: `Zadanie z nazwą '${template.task_name}' już istnieje w tej przestrzeni`,
-              template_id: command.template_id,
+              template_id: item.template_id,
             },
           });
         } else {
@@ -169,7 +165,7 @@ export async function bulkCreateFromTemplates(
             error: {
               code: 'internal_error',
               message: 'Błąd przy tworzeniu zadania',
-              template_id: command.template_id,
+              template_id: item.template_id,
             },
           });
         }
@@ -202,13 +198,13 @@ export async function bulkCreateFromTemplates(
       });
 
     } catch (error) {
-      console.error(`Error processing template ${command.template_id}:`, error);
+      console.error(`Error processing template ${item.template_id}:`, error);
       results.push({
         status: 500,
         error: {
           code: 'internal_error',
           message: 'Nieoczekiwany błąd przy przetwarzaniu szablonu',
-          template_id: command.template_id,
+          template_id: item.template_id,
         },
       });
     }

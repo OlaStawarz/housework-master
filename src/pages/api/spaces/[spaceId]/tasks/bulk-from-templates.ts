@@ -18,9 +18,9 @@ const bulkCreateSpaceIdSchema = z.object({
  * Schema walidacji body dla POST /api/spaces/{spaceId}/tasks/bulk-from-templates
  */
 const bulkCreateTasksBodySchema = z.object({
-  template_id: z.string().uuid('Nieprawidłowy format ID szablonu'),
   items: z.array(
     z.object({
+      template_id: z.string().uuid('Nieprawidłowy format ID szablonu'),
       override_recurrence_value: z.number().int().positive().nullable().optional(),
       override_recurrence_unit: z.enum(['days', 'months']).nullable().optional(),
     })
@@ -31,15 +31,15 @@ const bulkCreateTasksBodySchema = z.object({
 
 /**
  * POST /api/spaces/{spaceId}/tasks/bulk-from-templates
- * Masowo tworzy zadania na podstawie jednego szablonu dla wskazanej przestrzeni
+ * Masowo tworzy zadania na podstawie szablonów dla wskazanej przestrzeni
  * Zwraca 207 Multi-Status z per-item wynikami (201 dla sukcesu, 404/409/500 dla błędów)
  * 
  * Path parameters:
  * - spaceId (required): UUID - identyfikator przestrzeni
  * 
  * Body JSON:
- * - template_id (required): UUID - ID szablonu (wspólny dla wszystkich zadań)
  * - items (required): array - tablica elementów do tworzenia (1-50 elementów)
+ *   - template_id (required): UUID - ID szablonu dla tego zadania
  *   - override_recurrence_value (optional): number - nadpisanie wartości cykliczności
  *   - override_recurrence_unit (optional): 'days' | 'months' - nadpisanie jednostki cykliczności
  * 

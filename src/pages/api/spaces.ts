@@ -21,22 +21,26 @@ const getSpacesQuerySchema = z.object({
 /**
  * Schema walidacji body dla POST /api/spaces
  */
-const postSpaceBodySchema = z.object({
-  name: z.string().min(1, "Name is required and cannot be empty").max(100, "Name must be at most 100 characters").trim(),
-  space_type: z.string().max(50, "Space type code must be at most 50 characters").optional().nullable(),
-  icon: z.string().max(50, "Icon must be at most 50 characters").optional().nullable(),
+export const postSpaceBodySchema = z.object({
+  name: z
+    .string()
+    .min(1, "Nazwa jest wymagana")
+    .max(100, "Nazwa może mieć maksymalnie 100 znaków")
+    .trim(),
+  space_type: z.string().max(50, "Kod typu przestrzeni może mieć maksymalnie 50 znaków").optional().nullable(),
+  icon: z.string().max(50, "Ikona może mieć maksymalnie 50 znaków").optional().nullable(),
 });
 
 /**
  * GET /api/spaces
  * Pobiera listę przestrzeni użytkownika z paginacją, filtrowaniem i sortowaniem
- * 
+ *
  * Query params:
  * - search (opcjonalny): string - filtrowanie po fragmencie nazwy
  * - page (opcjonalny): integer - numer strony, domyślnie 1
  * - limit (opcjonalny): integer - liczba rekordów na stronę, domyślnie 20, max 100
  * - sort (opcjonalny): string - kierunek i pole sortowania, domyślnie "created_at.desc"
- * 
+ *
  * Responses:
  * - 200: lista przestrzeni z informacjami o paginacji
  * - 400: błędne parametry query

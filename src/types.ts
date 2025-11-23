@@ -151,13 +151,13 @@ export interface CreateTaskParams {
 
 /** Pojedynczy element w bulk-from-templates */
 export type BulkCreateTaskItemCommand = {
+  template_id: string;
   override_recurrence_value?: number | null;
   override_recurrence_unit?: RecurrenceUnit | null;
 };
 
 /** Payload do masowego tworzenia z szablonów */
 export type BulkCreateTasksCommand = {
-  template_id: TaskTemplateDto['id'];
   items: BulkCreateTaskItemCommand[];
 };
 
