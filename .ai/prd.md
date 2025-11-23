@@ -205,7 +205,7 @@ Aplikacja ma na celu rozwiązanie tych problemów poprzez stworzenie prostego sy
 - Na liście "Zbliżające się" znajdują się zadania, których termin wkrótce nadejdzie, posortowane od najpilniejszego.
 - Każdy element listy zawiera: nazwę zadania, nazwę przestrzeni oraz informację o terminie (np. "Zostały 2 dni", "Po terminie 5 dni").
 
-#### US-013: Przeglądanie zadań na liście przestrzeni
+#### US-013: Przeglądanie listy przestrzeni
 
 **Opis:** Jako użytkownik, chcę móc zobaczyć przegląd wszystkich moich przestrzeni, aby mieć szybki wgląd w organizację domu i łatwo przechodzić do szczegółów wybranej przestrzeni.
 
