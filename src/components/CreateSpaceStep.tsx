@@ -111,7 +111,13 @@ export function CreateSpaceStep({ onSuccess, onCancel }: CreateSpaceStepProps) {
           <Input
             id="space-name"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(e) => {
+              setFormData({ ...formData, name: e.target.value });
+              // Czyść błąd podczas wpisywania
+              if (errors.name) {
+                setErrors({ ...errors, name: null });
+              }
+            }}
             placeholder="np. Kuchnia, Łazienka, Salon"
             disabled={isSubmitting}
             aria-invalid={!!errors.name}
