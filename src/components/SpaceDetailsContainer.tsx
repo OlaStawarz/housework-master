@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
 import { useSpace } from "./hooks/useSpace";
 import { useTasks } from "./hooks/useTasks";
+import { useDeleteSpace } from "./hooks/useDeleteSpace";
 import { groupTasksByRecurrence } from "@/lib/utils/groupTasksByRecurrence";
 import { SpaceHeader } from "./SpaceHeader";
 import { RecurrenceGroup } from "./RecurrenceGroup";
 import { EmptySpaceState } from "./EmptySpaceState";
 import { TasksLoadingSkeleton } from "./TasksLoadingSkeleton";
 import { CreateTaskModal } from "./CreateTaskModal";
+import { ConfirmDeleteSpaceDialog } from "./ConfirmDeleteSpaceDialog";
 import { Button } from "@/components/ui/button";
 
 interface SpaceDetailsContainerProps {
@@ -26,6 +28,12 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
   });
 
   const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // Hook do usuwania przestrzeni
+  const { deleteSpace, isDeleting } = useDeleteSpace({
+    spaceId,
+  });
 
   // Grupowanie zadań (memoizowane)
   const groupedTasks = useMemo(() => {
@@ -50,8 +58,17 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
     console.log("Delete task:", taskId);
   };
 
-  const handleDeleteSpace = () => {
-    console.log("Delete space:", spaceId);
+  const handleOpenDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    await deleteSpace();
+    // Modal zamknie się automatycznie po przekierowaniu
   };
 
   const handleCreateTask = () => {
@@ -98,7 +115,7 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
 
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8">
-      <SpaceHeader space={space} onDeleteSpace={handleDeleteSpace} />
+      <SpaceHeader space={space} onDeleteSpace={handleOpenDeleteModal} />
 
       {/* Przycisk dodawania zadania */}
       <div className="mb-6">
@@ -143,6 +160,15 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
         onClose={handleCloseTaskModal}
         spaceId={spaceId}
         onTaskCreated={handleTaskCreated}
+      />
+
+      {/* Modal potwierdzenia usunięcia przestrzeni */}
+      <ConfirmDeleteSpaceDialog
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        spaceName={space.name}
+        isDeleting={isDeleting}
       />
     </div>
   );

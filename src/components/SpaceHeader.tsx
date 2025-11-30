@@ -18,7 +18,7 @@ export function SpaceHeader({ space, onDeleteSpace }: SpaceHeaderProps) {
         <h1 className="text-3xl font-bold">{space.name}</h1>
       </div>
 
-      <Button variant="destructive" onClick={onDeleteSpace} disabled>
+      <Button variant="destructive" onClick={onDeleteSpace}>
         Usuń przestrzeń
       </Button>
     </div>
