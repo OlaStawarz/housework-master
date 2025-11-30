@@ -1,0 +1,19 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { SpaceDetailsContainer } from "@/components/SpaceDetailsContainer";
+
+// Ta strona wymaga autentykacji - middleware sprawdzi sesję
+
+// Pobranie spaceId z parametrów URL
+const { spaceId } = Astro.params;
+
+if (!spaceId) {
+  return Astro.redirect("/spaces");
+}
+---
+
+<Layout title="Szczegóły przestrzeni - Housework Master">
+  <main>
+    <SpaceDetailsContainer spaceId={spaceId} client:load />
+  </main>
+</Layout>

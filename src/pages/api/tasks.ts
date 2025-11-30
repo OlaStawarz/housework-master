@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { getTasks, PageOutOfRangeError, createTask, SpaceNotFoundError, DuplicateTaskError } from '../../lib/services/tasksService';
 import { validateSupabaseClient, successResponse, errorResponse, validationErrorResponse } from '../../lib/utils';
+import { DEFAULT_USER_ID } from '@/db/supabase.client';
 
 export const prerender = false;
 
@@ -56,13 +57,7 @@ export const GET: APIRoute = async (context) => {
     const clientError = validateSupabaseClient(supabase);
     if (clientError) return clientError;
 
-    // Guard clause - sprawdzenie autoryzacji
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      return errorResponse('Unauthorized', 'User not authenticated', 401);
-    }
-
-    const userId = session.user.id;
+    const userId = DEFAULT_USER_ID;
 
     // Walidacja parametrów query
     const url = new URL(context.request.url);
@@ -129,13 +124,7 @@ export const POST: APIRoute = async (context) => {
     const clientError = validateSupabaseClient(supabase);
     if (clientError) return clientError;
 
-    // Guard clause - sprawdzenie autoryzacji
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      return errorResponse('Unauthorized', 'User not authenticated', 401);
-    }
-
-    const userId = session.user.id;
+    const userId = DEFAULT_USER_ID;
 
     // Parsowanie i walidacja body
     let body;

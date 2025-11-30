@@ -25,7 +25,7 @@ W widoku przestrzeni zadania są grupowane w sekcje z nagłówkami według cykli
 - Nagłówek sekcji: jednostka czasu (np. "Codziennie", "Co 3 dni", "Co miesiąc").
 - Wewnątrz sekcji: karty z poszczególnymi zadaniami.
 - Pozwala to szybciej zorientować się w planie pracy dla danej przestrzeni.
-- Kluczowe informacje: nagłówek (nazwa, ikona, opcje edycji/usunięcia), lista zadań pogrupowana według cykliczności (recurrence_unit i wartości), przycisk "Dodaj zadanie".
+- Kluczowe informacje: nagłówek (nazwa, ikona, opcja usunięcia), lista zadań pogrupowana według cykliczności (recurrence_unit i wartości), przycisk "Dodaj zadanie".
 - Grupowanie zadań: zadania są wyświetlane pogrupowane według cykliczności (np. 1 dzień, 2 dni, 7 dni, 1 miesiąc), sortowane najpierw po jednostce (dni, miesiące), a następnie po wartości rosnąco.
 - Kluczowe komponenty: `TaskList`, `TaskCard`, `CreateTaskModal`, `EditTaskRecurrenceModal`, `ConfirmDialog`.
 - UX, dostępność, bezpieczeństwo: modalne formy, tooltipy dla disabled, potwierdzenie kaskadowego usunięcia.
