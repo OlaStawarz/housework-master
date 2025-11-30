@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useSpace } from "./hooks/useSpace";
 import { useTasks } from "./hooks/useTasks";
 import { groupTasksByRecurrence } from "@/lib/utils/groupTasksByRecurrence";
@@ -6,6 +6,7 @@ import { SpaceHeader } from "./SpaceHeader";
 import { RecurrenceGroup } from "./RecurrenceGroup";
 import { EmptySpaceState } from "./EmptySpaceState";
 import { TasksLoadingSkeleton } from "./TasksLoadingSkeleton";
+import { CreateTaskModal } from "./CreateTaskModal";
 import { Button } from "@/components/ui/button";
 
 interface SpaceDetailsContainerProps {
@@ -23,6 +24,8 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
     spaceId,
     sort: "recurrence.asc",
   });
+
+  const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
 
   // Grupowanie zadań (memoizowane)
   const groupedTasks = useMemo(() => {
@@ -52,7 +55,15 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
   };
 
   const handleCreateTask = () => {
-    console.log("Create task for space:", spaceId);
+    setIsCreateTaskModalOpen(true);
+  };
+
+  const handleCloseTaskModal = () => {
+    setIsCreateTaskModalOpen(false);
+  };
+
+  const handleTaskCreated = () => {
+    refetch();
   };
 
   // Stan ładowania przestrzeni
@@ -91,9 +102,7 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
 
       {/* Przycisk dodawania zadania */}
       <div className="mb-6">
-        <Button onClick={handleCreateTask} disabled>
-          Dodaj zadanie
-        </Button>
+        <Button onClick={handleCreateTask}>Dodaj zadanie</Button>
       </div>
 
       {/* Lista zadań */}
@@ -127,6 +136,14 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
           ))}
         </div>
       )}
+
+      {/* Modal tworzenia zadania */}
+      <CreateTaskModal
+        isOpen={isCreateTaskModalOpen}
+        onClose={handleCloseTaskModal}
+        spaceId={spaceId}
+        onTaskCreated={handleTaskCreated}
+      />
     </div>
   );
 }
