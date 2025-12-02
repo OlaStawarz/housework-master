@@ -94,9 +94,9 @@ export function useTaskMutations({
         return;
       }
 
-      // Błąd 422 - osiągnięto limit odroczeń
+      // Błąd 422 - osiągnięto limit przełożeń
       if (response.status === 422) {
-        toast.error("Osiągnięto limit odroczeń dla tego zadania");
+        toast.error("To zadanie zostało już 3 razy przełożone");
         return;
       }
 

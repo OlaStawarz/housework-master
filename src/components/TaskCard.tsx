@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { TaskDto } from "@/types";
@@ -51,6 +52,24 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
 
   const dueDateInfo = formatDate(task.due_date);
   const isOverdue = dueDateInfo.variant === "destructive";
+  const isPostponeLimitReached = task.postponement_count >= 3;
+
+  // Handler dla przycisku postpone - obsługuje zarówno desktop jak i mobile
+  const handlePostponeClick = () => {
+    // Jeśli limit przełożeń został osiągnięty, pokaż toast i zablokuj akcję
+    if (isPostponeLimitReached) {
+      toast.error("To zadanie zostało już 3 razy przełożone. Czas je zrobić!");
+      return; // Nie wykonuj akcji
+    }
+    
+    // Jeśli jest w trakcie ukończenia, zablokuj akcję
+    if (isCompleting) {
+      return;
+    }
+    
+    // W przeciwnym razie wykonaj normalną akcję postpone
+    onPostpone(task.id);
+  };
 
   return (
     <div className={`p-4 border rounded-lg transition-all duration-300 ${isOverdue ? "border-destructive bg-destructive/5" : ""} ${isCompleting ? "opacity-50 scale-[0.98] bg-muted" : ""}`}>
@@ -83,18 +102,33 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           {isOverdue && (
-            <Button variant="outline" size="sm" onClick={() => onPostpone(task.id)} disabled={isCompleting}>
-              Zrobię to jutro
-            </Button>
+            <div className="flex flex-col gap-1 w-full sm:w-auto">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handlePostponeClick} 
+                disabled={isCompleting}
+                className={`w-full ${isPostponeLimitReached ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                Zrobię to jutro
+              </Button>
+              {isPostponeLimitReached && (
+                <span className="text-xs text-destructive px-2">
+                  Zadanie przełożone 3 razy!
+                </span>
+              )}
+            </div>
           )}
-          <Button variant="ghost" size="sm" onClick={() => onEdit(task.id)} disabled={true}>
-            Edytuj
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => onDelete(task.id)} disabled={true}>
-            Usuń
-          </Button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="ghost" size="sm" onClick={() => onEdit(task.id)} disabled={true} className="flex-1 sm:flex-none">
+              Edytuj
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => onDelete(task.id)} disabled={true} className="flex-1 sm:flex-none">
+              Usuń
+            </Button>
+          </div>
         </div>
       </div>
     </div>
