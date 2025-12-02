@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { TaskDto } from "@/types";
@@ -11,6 +12,21 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: TaskCardProps) {
+  // Stan lokalny do obsługi animacji ukończenia
+  const [isCompleting, setIsCompleting] = useState(false);
+
+  // Resetujemy stan ukończenia, gdy zadanie zostanie zaktualizowane z serwera
+  useEffect(() => {
+    setIsCompleting(false);
+  }, [task.last_completed_at, task.due_date]);
+
+  const handleCheckChange = (checked: boolean) => {
+    if (checked) {
+      setIsCompleting(true);
+      onComplete(task.id);
+    }
+  };
+
   // Formatowanie daty
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -37,17 +53,17 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
   const isOverdue = dueDateInfo.variant === "destructive";
 
   return (
-    <div className={`p-4 border rounded-lg ${isOverdue ? "border-destructive bg-destructive/5" : ""}`}>
+    <div className={`p-4 border rounded-lg transition-all duration-300 ${isOverdue ? "border-destructive bg-destructive/5" : ""} ${isCompleting ? "opacity-50 scale-[0.98] bg-muted" : ""}`}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 flex-1">
           <Checkbox
             id={`task-${task.id}`}
-            checked={false}
-            onCheckedChange={() => onComplete(task.id)}
-            disabled
-            className="mt-1"
+            checked={isCompleting}
+            onCheckedChange={handleCheckChange}
+            disabled={isCompleting}
+            className="mt-1 transition-all duration-300"
           />
-          <div className="flex-1">
+          <div className={`flex-1 transition-all duration-300 ${isCompleting ? "line-through text-muted-foreground" : ""}`}>
             <label htmlFor={`task-${task.id}`} className="font-medium cursor-pointer">
               {task.name}
             </label>
@@ -68,13 +84,15 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => onPostpone(task.id)} disabled>
-            Zrobię to jutro
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => onEdit(task.id)} disabled>
+          {isOverdue && (
+            <Button variant="outline" size="sm" onClick={() => onPostpone(task.id)} disabled={isCompleting}>
+              Zrobię to jutro
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={() => onEdit(task.id)} disabled={true}>
             Edytuj
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => onDelete(task.id)} disabled>
+          <Button variant="ghost" size="sm" onClick={() => onDelete(task.id)} disabled={true}>
             Usuń
           </Button>
         </div>

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useSpace } from "./hooks/useSpace";
 import { useTasks } from "./hooks/useTasks";
 import { useDeleteSpace } from "./hooks/useDeleteSpace";
+import { useTaskMutations } from "./hooks/useTaskMutations";
 import { groupTasksByRecurrence } from "@/lib/utils/groupTasksByRecurrence";
 import { SpaceHeader } from "./SpaceHeader";
 import { RecurrenceGroup } from "./RecurrenceGroup";
@@ -35,19 +36,24 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
     spaceId,
   });
 
+  // Hook do mutacji zadań (complete, postpone)
+  const { completeTask, postponeTask } = useTaskMutations({
+    onPostponeSuccess: refetch, // Po sukcesie postpone odśwież listę zadań
+  });
+
   // Grupowanie zadań (memoizowane)
   const groupedTasks = useMemo(() => {
     if (tasks.length === 0) return [];
     return groupTasksByRecurrence(tasks);
   }, [tasks]);
 
-  // Placeholder handlery - będą zaimplementowane później
-  const handleComplete = (taskId: string) => {
-    console.log("Complete task:", taskId);
+  // Handlery zadań
+  const handleComplete = async (taskId: string) => {
+    await completeTask(taskId);
   };
 
-  const handlePostpone = (taskId: string) => {
-    console.log("Postpone task:", taskId);
+  const handlePostpone = async (taskId: string) => {
+    await postponeTask(taskId);
   };
 
   const handleEdit = (taskId: string) => {

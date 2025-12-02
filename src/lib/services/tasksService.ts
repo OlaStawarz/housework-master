@@ -8,7 +8,9 @@ import type {
   TaskListDto,
   PaginationDto,
   SpaceMinDto,
-  CreateTaskParams
+  CreateTaskParams,
+  CompleteTaskCommand,
+  PostponeTaskCommand
 } from '../../types';
 
 /**
@@ -59,6 +61,44 @@ export class PageOutOfRangeError extends Error {
     super(`Strona ${requestedPage} jest poza zakresem. Maksymalna strona to ${maxPage}`);
     this.name = 'PageOutOfRangeError';
   }
+}
+
+/**
+ * Custom error class dla nieznalezionego zadania
+ */
+export class TaskNotFoundError extends Error {
+  constructor(taskId: string) {
+    super(`Zadanie z ID '${taskId}' nie istnieje lub nie należy do użytkownika`);
+    this.name = 'TaskNotFoundError';
+  }
+}
+
+/**
+ * Custom error class dla osiągnięcia limitu odroczeń
+ */
+export class PostponementLimitError extends Error {
+  constructor() {
+    super('Osiągnięto maksymalny limit odroczeń (3) dla tego zadania w bieżącym cyklu');
+    this.name = 'PostponementLimitError';
+  }
+}
+
+/**
+ * Parametry dla funkcji completeTask
+ */
+export interface CompleteTaskParams {
+  userId: string;
+  taskId: string;
+  command: CompleteTaskCommand;
+}
+
+/**
+ * Parametry dla funkcji postponeTask
+ */
+export interface PostponeTaskParams {
+  userId: string;
+  taskId: string;
+  command: PostponeTaskCommand;
 }
 
 /**
@@ -504,4 +544,126 @@ export async function createTask(
   };
 
   return task;
+}
+
+/**
+ * Oznacza zadanie jako ukończone w bieżącym cyklu
+ * Po wykonaniu:
+ * - last_completed_at zostaje ustawione na completed_at (lub now)
+ * - postponement_count zostaje zresetowany do 0
+ * - obliczany jest nowy due_date = last_completed_at + recurrence_value * unit
+ * - status pozostaje pending
+ * 
+ * @param supabase - Klient Supabase
+ * @param params - Parametry CompleteTaskParams (userId, taskId, command)
+ * @returns Promise<void>
+ * @throws TaskNotFoundError jeśli zadanie nie istnieje lub nie należy do użytkownika
+ * @throws Error jeśli zapytanie do bazy danych nie powiedzie się
+ */
+export async function completeTask(
+  supabase: SupabaseClient,
+  params: CompleteTaskParams
+): Promise<void> {
+  const { userId, taskId, command } = params;
+  const { completed_at } = command;
+
+  // Pobranie zadania (weryfikacja istnienia i własności)
+  const { data: task, error: fetchError } = await supabase
+    .from('tasks')
+    .select('id, recurrence_value, recurrence_unit')
+    .eq('id', taskId)
+    .eq('user_id', userId)
+    .single();
+
+  if (fetchError || !task) {
+    throw new TaskNotFoundError(taskId);
+  }
+
+  // Określenie completed_at (przekazana wartość lub teraz)
+  const completedDate = completed_at ? new Date(completed_at) : new Date();
+
+  // Obliczenie nowego due_date na podstawie completed_at + recurrence
+  const newDueDate = new Date(completedDate);
+  if (task.recurrence_unit === 'days') {
+    newDueDate.setDate(newDueDate.getDate() + task.recurrence_value);
+  } else if (task.recurrence_unit === 'months') {
+    newDueDate.setMonth(newDueDate.getMonth() + task.recurrence_value);
+  }
+
+  // Aktualizacja zadania
+  const { error: updateError } = await supabase
+    .from('tasks')
+    .update({
+      last_completed_at: completedDate.toISOString(),
+      postponement_count: 0,
+      due_date: newDueDate.toISOString(),
+      status: 'pending'
+    })
+    .eq('id', taskId)
+    .eq('user_id', userId);
+
+  if (updateError) {
+    console.error('Error completing task:', updateError);
+    throw new Error('Failed to complete task in database');
+  }
+}
+
+/**
+ * Odkłada zadanie o 1 dzień (maksymalnie 3 razy w bieżącym cyklu)
+ * Po odroczeniu:
+ * - postponement_count jest inkrementowany o 1
+ * - due_date jest przesuwany o 1 dzień
+ * - status zmieniany na postponed
+ * 
+ * @param supabase - Klient Supabase
+ * @param params - Parametry PostponeTaskParams (userId, taskId, command)
+ * @returns Promise<void>
+ * @throws TaskNotFoundError jeśli zadanie nie istnieje lub nie należy do użytkownika
+ * @throws PostponementLimitError jeśli osiągnięto limit 3 odroczeń
+ * @throws Error jeśli zapytanie do bazy danych nie powiedzie się
+ */
+export async function postponeTask(
+  supabase: SupabaseClient,
+  params: PostponeTaskParams
+): Promise<void> {
+  const { userId, taskId } = params;
+
+  // Pobranie zadania (weryfikacja istnienia, własności i postponement_count)
+  const { data: task, error: fetchError } = await supabase
+    .from('tasks')
+    .select('id, postponement_count')
+    .eq('id', taskId)
+    .eq('user_id', userId)
+    .single();
+
+  if (fetchError || !task) {
+    throw new TaskNotFoundError(taskId);
+  }
+
+  // Sprawdzenie limitu odroczeń
+  if (task.postponement_count >= 3) {
+    throw new PostponementLimitError();
+  }
+
+  // Obliczenie nowego due_date (dzisiaj + 1 dzień)
+  // Zawsze liczone od obecnego dnia, nie od starego due_date
+  const today = new Date();
+  const newDueDate = new Date(today);
+  newDueDate.setDate(newDueDate.getDate() + 1);
+
+  // Aktualizacja zadania
+  const { error: updateError } = await supabase
+    .from('tasks')
+    .update({
+      postponement_count: task.postponement_count + 1,
+      due_date: newDueDate.toISOString(),
+      status: 'postponed'
+    })
+    .eq('id', taskId)
+    .eq('user_id', userId);
+
+  if (updateError) {
+    console.error('Error postponing task:', updateError);
+    throw new Error('Failed to postpone task in database');
+  }
 }
