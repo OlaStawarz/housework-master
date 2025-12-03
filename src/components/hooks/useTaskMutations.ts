@@ -1,24 +1,35 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import type { UpdateTaskRecurrenceCommand } from "@/types";
 
 interface UseTaskMutationsOptions {
   onCompleteSuccess?: () => void;
   onPostponeSuccess?: () => void;
+  onUpdateSuccess?: () => void;
+  onDeleteSuccess?: () => void;
 }
 
 interface UseTaskMutationsResult {
   completeTask: (taskId: string) => Promise<void>;
   postponeTask: (taskId: string) => Promise<void>;
+  updateTask: (taskId: string, command: UpdateTaskRecurrenceCommand) => Promise<void>;
+  deleteTask: (taskId: string) => Promise<void>;
   isCompletingTask: boolean;
   isPostponingTask: boolean;
+  isUpdatingTask: boolean;
+  isDeletingTask: boolean;
 }
 
 export function useTaskMutations({
   onCompleteSuccess,
   onPostponeSuccess,
+  onUpdateSuccess,
+  onDeleteSuccess,
 }: UseTaskMutationsOptions = {}): UseTaskMutationsResult {
   const [isCompletingTask, setIsCompletingTask] = useState(false);
   const [isPostponingTask, setIsPostponingTask] = useState(false);
+  const [isUpdatingTask, setIsUpdatingTask] = useState(false);
+  const [isDeletingTask, setIsDeletingTask] = useState(false);
 
   const completeTask = async (taskId: string) => {
     // Guard: już w trakcie oznaczania
@@ -116,11 +127,116 @@ export function useTaskMutations({
     }
   };
 
+  const updateTask = async (taskId: string, command: UpdateTaskRecurrenceCommand) => {
+    // Guard: już w trakcie aktualizacji
+    if (isUpdatingTask) {
+      return;
+    }
+
+    setIsUpdatingTask(true);
+
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(command),
+      });
+
+      // Sukces (200 OK)
+      if (response.ok) {
+        toast.success("Zadanie zostało zaktualizowane");
+
+        // Wywołaj callback sukcesu (jeśli przekazany)
+        if (onUpdateSuccess) {
+          onUpdateSuccess();
+        }
+        return;
+      }
+
+      // Błąd 404 - zadanie nie istnieje
+      if (response.status === 404) {
+        toast.error("Zadanie nie zostało znalezione");
+        
+        // Odśwież listę, aby usunąć nieistniejące zadanie
+        if (onUpdateSuccess) {
+          onUpdateSuccess();
+        }
+        return;
+      }
+
+      // Błąd 422 - walidacja
+      if (response.status === 422) {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Nieprawidłowe dane");
+        return;
+      }
+
+      // Inne błędy
+      throw new Error("Nie udało się zaktualizować zadania");
+    } catch (error) {
+      console.error("Error updating task:", error);
+      toast.error("Wystąpił błąd podczas aktualizacji zadania. Spróbuj ponownie.");
+    } finally {
+      setIsUpdatingTask(false);
+    }
+  };
+
+  const deleteTask = async (taskId: string) => {
+    // Guard: już w trakcie usuwania
+    if (isDeletingTask) {
+      return;
+    }
+
+    setIsDeletingTask(true);
+
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "DELETE",
+      });
+
+      // Sukces (204 No Content)
+      if (response.status === 204) {
+        toast.success("Zadanie zostało usunięte");
+
+        // Wywołaj callback sukcesu (jeśli przekazany)
+        if (onDeleteSuccess) {
+          onDeleteSuccess();
+        }
+        return;
+      }
+
+      // Błąd 404 - zadanie nie istnieje
+      if (response.status === 404) {
+        toast.error("Zadanie nie zostało znalezione");
+        
+        // Odśwież listę, aby usunąć nieistniejące zadanie
+        if (onDeleteSuccess) {
+          onDeleteSuccess();
+        }
+        return;
+      }
+
+      // Inne błędy
+      throw new Error("Nie udało się usunąć zadania");
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      toast.error("Wystąpił błąd podczas usuwania zadania. Spróbuj ponownie.");
+    } finally {
+      setIsDeletingTask(false);
+    }
+  };
+
   return {
     completeTask,
     postponeTask,
+    updateTask,
+    deleteTask,
     isCompletingTask,
     isPostponingTask,
+    isUpdatingTask,
+    isDeletingTask,
   };
 }
 

@@ -9,8 +9,11 @@ import { RecurrenceGroup } from "./RecurrenceGroup";
 import { EmptySpaceState } from "./EmptySpaceState";
 import { TasksLoadingSkeleton } from "./TasksLoadingSkeleton";
 import { CreateTaskModal } from "./CreateTaskModal";
+import { EditTaskRecurrenceModal } from "./EditTaskRecurrenceModal";
 import { ConfirmDeleteSpaceDialog } from "./ConfirmDeleteSpaceDialog";
+import { ConfirmDeleteTaskDialog } from "./ConfirmDeleteTaskDialog";
 import { Button } from "@/components/ui/button";
+import type { TaskDto } from "@/types";
 
 interface SpaceDetailsContainerProps {
   spaceId: string;
@@ -30,15 +33,19 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
 
   const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<TaskDto | null>(null);
+  const [deletingTask, setDeletingTask] = useState<TaskDto | null>(null);
 
   // Hook do usuwania przestrzeni
   const { deleteSpace, isDeleting } = useDeleteSpace({
     spaceId,
   });
 
-  // Hook do mutacji zadań (complete, postpone)
-  const { completeTask, postponeTask } = useTaskMutations({
+  // Hook do mutacji zadań (complete, postpone, update, delete)
+  const { completeTask, postponeTask, updateTask, deleteTask, isDeletingTask } = useTaskMutations({
     onPostponeSuccess: refetch, // Po sukcesie postpone odśwież listę zadań
+    onUpdateSuccess: refetch, // Po sukcesie update odśwież listę zadań
+    onDeleteSuccess: refetch, // Po sukcesie delete odśwież listę zadań
   });
 
   // Grupowanie zadań (memoizowane)
@@ -57,11 +64,36 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
   };
 
   const handleEdit = (taskId: string) => {
-    console.log("Edit task:", taskId);
+    const taskToEdit = tasks.find((t) => t.id === taskId);
+    if (taskToEdit) {
+      setEditingTask(taskToEdit);
+    }
   };
 
   const handleDelete = (taskId: string) => {
-    console.log("Delete task:", taskId);
+    const taskToDelete = tasks.find((t) => t.id === taskId);
+    if (taskToDelete) {
+      setDeletingTask(taskToDelete);
+    }
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingTask(null);
+  };
+
+  const handleCloseDeleteTaskDialog = () => {
+    setDeletingTask(null);
+  };
+
+  const handleConfirmDeleteTask = async () => {
+    if (deletingTask) {
+      await deleteTask(deletingTask.id);
+      setDeletingTask(null);
+    }
+  };
+
+  const handleTaskUpdated = () => {
+    refetch();
   };
 
   const handleOpenDeleteModal = () => {
@@ -175,6 +207,23 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
         onConfirm={handleConfirmDelete}
         spaceName={space.name}
         isDeleting={isDeleting}
+      />
+
+      {/* Modal edycji zadania */}
+      <EditTaskRecurrenceModal
+        isOpen={editingTask !== null}
+        onClose={handleCloseEditModal}
+        task={editingTask}
+        onTaskUpdated={handleTaskUpdated}
+      />
+
+      {/* Dialog potwierdzenia usunięcia zadania */}
+      <ConfirmDeleteTaskDialog
+        isOpen={deletingTask !== null}
+        onClose={handleCloseDeleteTaskDialog}
+        onConfirm={handleConfirmDeleteTask}
+        taskName={deletingTask?.name || ""}
+        isDeleting={isDeletingTask}
       />
     </div>
   );

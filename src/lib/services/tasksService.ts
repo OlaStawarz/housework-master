@@ -9,6 +9,8 @@ import type {
   PaginationDto,
   SpaceMinDto,
   CreateTaskParams,
+  UpdateTaskParams,
+  DeleteTaskParams,
   CompleteTaskCommand,
   PostponeTaskCommand
 } from '../../types';
@@ -665,5 +667,143 @@ export async function postponeTask(
   if (updateError) {
     console.error('Error postponing task:', updateError);
     throw new Error('Failed to postpone task in database');
+  }
+}
+
+/**
+ * Aktualizuje cykliczność zadania (recurrence_value i recurrence_unit)
+ * Po aktualizacji przelicza nowy due_date bazując na last_completed_at (jeśli istnieje) lub na now
+ * 
+ * @param supabase - Klient Supabase
+ * @param params - Parametry UpdateTaskParams (userId, taskId, command)
+ * @returns Promise z zaktualizowanym TaskDto
+ * @throws TaskNotFoundError jeśli zadanie nie istnieje lub nie należy do użytkownika
+ * @throws Error jeśli zapytanie do bazy danych nie powiedzie się
+ */
+export async function updateTaskRecurrence(
+  supabase: SupabaseClient,
+  params: UpdateTaskParams
+): Promise<TaskDto> {
+  const { userId, taskId, command } = params;
+  const { recurrence_value, recurrence_unit } = command;
+
+  // Guard: sprawdzenie czy wartości są zdefiniowane (powinny być po walidacji)
+  if (recurrence_value === undefined || recurrence_unit === undefined) {
+    throw new Error('Recurrence value and unit are required');
+  }
+
+  // Pobranie zadania (weryfikacja istnienia i własności)
+  const { data: task, error: fetchError } = await supabase
+    .from('tasks')
+    .select('id')
+    .eq('id', taskId)
+    .eq('user_id', userId)
+    .single();
+
+  if (fetchError || !task) {
+    throw new TaskNotFoundError(taskId);
+  }
+
+  // Obliczenie nowego due_date
+  // Przy zmianie cykliczności zawsze liczymy od teraz (nowy cykl)
+  const newDueDate = new Date();
+
+  if (recurrence_unit === 'days') {
+    newDueDate.setDate(newDueDate.getDate() + recurrence_value);
+  } else if (recurrence_unit === 'months') {
+    newDueDate.setMonth(newDueDate.getMonth() + recurrence_value);
+  }
+
+  // Aktualizacja zadania
+  const { data: updatedTask, error: updateError } = await supabase
+    .from('tasks')
+    .update({
+      recurrence_value,
+      recurrence_unit,
+      due_date: newDueDate.toISOString(),
+    })
+    .eq('id', taskId)
+    .eq('user_id', userId)
+    .select(`
+      *,
+      space:spaces!inner(
+        id,
+        name,
+        space_type,
+        icon
+      )
+    `)
+    .single();
+
+  if (updateError || !updatedTask) {
+    console.error('Error updating task recurrence:', updateError);
+    throw new Error('Failed to update task recurrence in database');
+  }
+
+  // Wyciągnięcie danych przestrzeni z relacji
+  const spaceData = Array.isArray(updatedTask.space) ? updatedTask.space[0] : updatedTask.space;
+
+  // Mapowanie na TaskDto
+  const taskDto: TaskDto = {
+    id: updatedTask.id,
+    space_id: updatedTask.space_id,
+    user_id: updatedTask.user_id,
+    name: updatedTask.name,
+    recurrence_value: updatedTask.recurrence_value,
+    recurrence_unit: updatedTask.recurrence_unit,
+    due_date: updatedTask.due_date,
+    status: updatedTask.status,
+    postponement_count: updatedTask.postponement_count,
+    last_completed_at: updatedTask.last_completed_at,
+    created_at: updatedTask.created_at,
+    updated_at: updatedTask.updated_at,
+    space: {
+      id: spaceData.id,
+      name: spaceData.name,
+      space_type: spaceData.space_type,
+      icon: spaceData.icon,
+    } as SpaceMinDto,
+  };
+
+  return taskDto;
+}
+
+/**
+ * Usuwa zadanie należące do użytkownika
+ * 
+ * @param supabase - Klient Supabase
+ * @param params - Parametry DeleteTaskParams (userId, taskId)
+ * @returns Promise<void>
+ * @throws TaskNotFoundError jeśli zadanie nie istnieje lub nie należy do użytkownika
+ * @throws Error jeśli zapytanie do bazy danych nie powiedzie się
+ */
+export async function deleteTask(
+  supabase: SupabaseClient,
+  params: DeleteTaskParams
+): Promise<void> {
+  const { userId, taskId } = params;
+
+  // Najpierw sprawdzamy, czy zadanie istnieje i należy do użytkownika
+  const { data: existingTask, error: selectError } = await supabase
+    .from('tasks')
+    .select('id')
+    .eq('id', taskId)
+    .eq('user_id', userId)
+    .single();
+
+  if (selectError || !existingTask) {
+    throw new TaskNotFoundError(taskId);
+  }
+
+  // Wykonanie DELETE (CASCADE automatycznie usuwa powiązane motivational_messages)
+  const { error: deleteError } = await supabase
+    .from('tasks')
+    .delete()
+    .eq('id', taskId)
+    .eq('user_id', userId);
+
+  if (deleteError) {
+    console.error('Error deleting task:', deleteError);
+    throw new Error('Failed to delete task from database');
   }
 }

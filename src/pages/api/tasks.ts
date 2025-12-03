@@ -39,6 +39,16 @@ export const createTaskSchema = z.object({
 });
 
 /**
+ * Schema walidacji body dla PATCH /api/tasks/{taskId}
+ */
+export const editTaskSchema = z.object({
+  recurrence_value: z.number({ invalid_type_error: "Wartość musi być liczbą" })
+    .int({ message: "Wartość musi być liczbą całkowitą" })
+    .positive({ message: "Wartość musi być dodatnia" }),
+  recurrence_unit: z.enum(["days", "months"], { message: 'Jednostka musi być "days" lub "months"' }),
+});
+
+/**
  * GET /api/tasks
  * Pobiera listę zadań użytkownika z opcjonalnym filtrowaniem, sortowaniem i paginacją
  *

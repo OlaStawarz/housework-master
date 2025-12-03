@@ -116,9 +116,8 @@ type CreateTaskCommand = {
 1.  Stworzyć komponent `RecurrenceInputs` (jeśli jeszcze nie istnieje).
 2.  Stworzyć komponent `CreateTaskModal` z wykorzystaniem komponentów `Dialog` (Shadcn UI).
 3.  Zdefiniować schemat walidacji Zod (`createTaskSchema`).
-4.  Skonfigurować formularz `react-hook-form`.
-5.  Zaimplementować hooka mutacji `useCreateTask` (wrapper na `fetch POST /api/tasks`).
-6.  Obsłużyć logikę `onSubmit`: wywołanie mutacji -> sukces/błąd.
-7.  Obsłużyć specyficzny błąd `409` (ustawienie błędu w formularzu).
-8.  Zintegrować modal z widokiem `SpaceDetailsContainer` (przekazanie `isOpen`, `onClose`, `spaceId`).
+4.  Zaimplementować hooka mutacji `useCreateTask` (wrapper na `fetch POST /api/tasks`).
+5.  Obsłużyć logikę `onSubmit`: wywołanie mutacji -> sukces/błąd.
+6.  Obsłużyć specyficzny błąd `409` (ustawienie błędu w formularzu).
+7.  Zintegrować modal z widokiem `SpaceDetailsContainer` (przekazanie `isOpen`, `onClose`, `spaceId`).
 

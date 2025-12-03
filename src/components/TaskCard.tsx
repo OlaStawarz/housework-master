@@ -122,10 +122,10 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
             </div>
           )}
           <div className="flex gap-2 w-full sm:w-auto">
-            <Button variant="ghost" size="sm" onClick={() => onEdit(task.id)} disabled={true} className="flex-1 sm:flex-none">
+            <Button variant="ghost" size="sm" onClick={() => onEdit(task.id)} disabled={isCompleting} className="flex-1 sm:flex-none">
               Edytuj
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => onDelete(task.id)} disabled={true} className="flex-1 sm:flex-none">
+            <Button variant="ghost" size="sm" onClick={() => onDelete(task.id)} disabled={isCompleting} className="flex-1 sm:flex-none">
               Usuń
             </Button>
           </div>

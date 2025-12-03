@@ -1,27 +1,27 @@
 import { ConfirmDialog } from "./ConfirmDialog";
 
-interface ConfirmDeleteSpaceDialogProps {
+interface ConfirmDeleteTaskDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => Promise<void>;
-  spaceName: string;
+  taskName: string;
   isDeleting: boolean;
 }
 
-export function ConfirmDeleteSpaceDialog({
+export function ConfirmDeleteTaskDialog({
   isOpen,
   onClose,
   onConfirm,
-  spaceName,
+  taskName,
   isDeleting,
-}: ConfirmDeleteSpaceDialogProps) {
+}: ConfirmDeleteTaskDialogProps) {
   return (
     <ConfirmDialog
       isOpen={isOpen}
       onClose={onClose}
       onConfirm={onConfirm}
-      title={`Czy na pewno chcesz usunąć przestrzeń: ${spaceName}?`}
-      description="Zostaną również usunięte wszystkie przypisane do niej zadania. Ta operacja jest nieodwracalna."
+      title={`Czy na pewno chcesz usunąć zadanie: ${taskName}?`}
+      description="Ta operacja jest nieodwracalna."
       confirmText="Usuń"
       isConfirming={isDeleting}
     />

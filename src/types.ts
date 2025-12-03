@@ -149,6 +149,19 @@ export interface CreateTaskParams {
   command: CreateTaskCommand;
 }
 
+/** Parametry dla aktualizacji zadania w serwisie */
+export interface UpdateTaskParams {
+  userId: string;
+  taskId: string;
+  command: UpdateTaskRecurrenceCommand;
+}
+
+/** Parametry dla usunięcia zadania w serwisie */
+export interface DeleteTaskParams {
+  userId: string;
+  taskId: string;
+}
+
 /** Pojedynczy element w bulk-from-templates */
 export type BulkCreateTaskItemCommand = {
   template_id: string;
