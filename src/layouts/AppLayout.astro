@@ -1,0 +1,53 @@
+---
+import "../styles/global.css";
+import { Toaster } from "@/components/ui/sonner";
+import { NavigationContainer } from "@/components/navigation/NavigationContainer";
+
+interface Props {
+  title?: string;
+}
+
+const { title = "Housework Master" } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+// Zamockowane dane użytkownika (do zastąpienia prawdziwą autoryzacją)
+const mockUser = {
+  email: "jan.kowalski@example.com",
+  user_metadata: {
+    full_name: "Jan Kowalski",
+    avatar_url: undefined,
+  },
+};
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen bg-background">
+    <NavigationContainer 
+      user={mockUser} 
+      currentPath={currentPath} 
+      client:load 
+    />
+    <main class="container mx-auto px-4 py-6">
+      <slot />
+    </main>
+    <Toaster client:only="react" />
+  </body>
+</html>
+
+<style>
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    min-height: 100%;
+  }
+</style>
+

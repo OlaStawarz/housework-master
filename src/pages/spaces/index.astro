@@ -1,12 +1,10 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+import AppLayout from "@/layouts/AppLayout.astro";
 import { SpacesListContainer } from "@/components/SpacesListContainer";
 
 // Ta strona wymaga autentykacji - middleware sprawdzi sesję
 ---
 
-<Layout title="Moje przestrzenie - Housework Master">
-  <main>
-    <SpacesListContainer client:load />
-  </main>
-</Layout>
+<AppLayout title="Moje przestrzenie - Housework Master">
+  <SpacesListContainer client:load />
+</AppLayout>

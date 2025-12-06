@@ -1,11 +1,9 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import AppLayout from "@/layouts/AppLayout.astro";
 import { DashboardContainer } from "@/components/DashboardContainer";
 ---
 
-<Layout title="Dashboard - Housework Master">
-  <main>
-    <DashboardContainer client:load />
-  </main>
-</Layout>
+<AppLayout title="Dashboard - Housework Master">
+  <DashboardContainer client:load />
+</AppLayout>
 

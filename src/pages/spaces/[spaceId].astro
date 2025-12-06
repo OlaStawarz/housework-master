@@ -1,5 +1,5 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+import AppLayout from "@/layouts/AppLayout.astro";
 import { SpaceDetailsContainer } from "@/components/SpaceDetailsContainer";
 
 // Ta strona wymaga autentykacji - middleware sprawdzi sesję
@@ -12,8 +12,6 @@ if (!spaceId) {
 }
 ---
 
-<Layout title="Szczegóły przestrzeni - Housework Master">
-  <main>
-    <SpaceDetailsContainer spaceId={spaceId} client:load />
-  </main>
-</Layout>
+<AppLayout title="Szczegóły przestrzeni - Housework Master">
+  <SpaceDetailsContainer spaceId={spaceId} client:load />
+</AppLayout>
