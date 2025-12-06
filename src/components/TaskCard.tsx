@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { TaskDto } from "@/types";
+import { pluralizeDays, pluralizeMonths } from "@/lib/utils/pluralize";
 
 interface TaskCardProps {
   task: TaskDto;
@@ -10,9 +11,11 @@ interface TaskCardProps {
   onPostpone: (taskId: string) => void;
   onEdit: (taskId: string) => void;
   onDelete: (taskId: string) => void;
+  hideActions?: boolean;
+  showSpaceName?: boolean;
 }
 
-export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete, hideActions = false, showSpaceName = false }: TaskCardProps) {
   // Stan lokalny do obsługi animacji ukończenia
   const [isCompleting, setIsCompleting] = useState(false);
 
@@ -28,8 +31,8 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
     }
   };
 
-  // Formatowanie daty
-  const formatDate = (dateString: string) => {
+  // Formatowanie daty z uwzględnieniem jednostki cykliczności
+  const formatDate = (dateString: string, recurrenceUnit: string) => {
     const date = new Date(dateString);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -38,19 +41,46 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
 
     const diffDays = Math.floor((taskDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
+    // Dla dat przeszłych
     if (diffDays < 0) {
-      return { text: `${Math.abs(diffDays)} dni temu`, variant: "destructive" as const };
+      const absDays = Math.abs(diffDays);
+      
+      // Dla zadań miesięcznych, oblicz różnicę w miesiącach
+      if (recurrenceUnit === 'months' && absDays >= 25) {
+        const diffMonths = Math.round(absDays / 30);
+        if (diffMonths === 1) {
+          return { text: "Miesiąc temu", variant: "destructive" as const };
+        }
+        return { text: `${diffMonths} ${pluralizeMonths(diffMonths)} temu`, variant: "destructive" as const };
+      }
+      
+      return { text: `${absDays} ${pluralizeDays(absDays)} temu`, variant: "destructive" as const };
     }
+    
+    // Dla daty dzisiejszej
     if (diffDays === 0) {
       return { text: "Dzisiaj", variant: "default" as const };
     }
+    
+    // Dla jutra
     if (diffDays === 1) {
       return { text: "Jutro", variant: "secondary" as const };
     }
-    return { text: `Za ${diffDays} dni`, variant: "outline" as const };
+    
+    // Dla przyszłych dat
+    // Dla zadań miesięcznych, oblicz różnicę w miesiącach
+    if (recurrenceUnit === 'months' && diffDays >= 25) {
+      const diffMonths = Math.round(diffDays / 30);
+      if (diffMonths === 1) {
+        return { text: "Za miesiąc", variant: "outline" as const };
+      }
+      return { text: `Za ${diffMonths} ${pluralizeMonths(diffMonths)}`, variant: "outline" as const };
+    }
+    
+    return { text: `Za ${diffDays} ${pluralizeDays(diffDays)}`, variant: "outline" as const };
   };
 
-  const dueDateInfo = formatDate(task.due_date);
+  const dueDateInfo = formatDate(task.due_date, task.recurrence_unit);
   const isOverdue = dueDateInfo.variant === "destructive";
   const isPostponeLimitReached = task.postponement_count >= 3;
 
@@ -82,24 +112,29 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
             disabled={isCompleting}
             className="mt-1 transition-all duration-300"
           />
-          <div className={`flex-1 transition-all duration-300 ${isCompleting ? "line-through text-muted-foreground" : ""}`}>
-            <label htmlFor={`task-${task.id}`} className="font-medium cursor-pointer">
-              {task.name}
-            </label>
-            <div className="mt-1">
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full ${
-                  dueDateInfo.variant === "destructive"
-                    ? "bg-destructive/10 text-destructive"
-                    : dueDateInfo.variant === "default"
-                      ? "bg-primary/10 text-primary"
-                      : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {dueDateInfo.text}
-              </span>
-            </div>
-          </div>
+              <div className={`flex-1 transition-all duration-300 ${isCompleting ? "line-through text-muted-foreground" : ""}`}>
+                <label htmlFor={`task-${task.id}`} className="font-medium cursor-pointer">
+                  {task.name}
+                  {showSpaceName && task.space && (
+                    <span className="text-sm text-muted-foreground font-normal ml-2">
+                      ({task.space.name})
+                    </span>
+                  )}
+                </label>
+                <div className="mt-1">
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full ${
+                      dueDateInfo.variant === "destructive"
+                        ? "bg-destructive/10 text-destructive"
+                        : dueDateInfo.variant === "default"
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {dueDateInfo.text}
+                  </span>
+                </div>
+              </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -121,14 +156,16 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
               )}
             </div>
           )}
-          <div className="flex gap-2 w-full sm:w-auto">
-            <Button variant="ghost" size="sm" onClick={() => onEdit(task.id)} disabled={isCompleting} className="flex-1 sm:flex-none">
-              Edytuj
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => onDelete(task.id)} disabled={isCompleting} className="flex-1 sm:flex-none">
-              Usuń
-            </Button>
-          </div>
+          {!hideActions && (
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button variant="ghost" size="sm" onClick={() => onEdit(task.id)} disabled={isCompleting} className="flex-1 sm:flex-none">
+                Edytuj
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => onDelete(task.id)} disabled={isCompleting} className="flex-1 sm:flex-none">
+                Usuń
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

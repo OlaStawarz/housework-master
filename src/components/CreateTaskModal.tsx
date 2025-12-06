@@ -25,24 +25,34 @@ export function CreateTaskModal({ isOpen, onClose, spaceId, onTaskCreated }: Cre
     recurrence_value: 1,
     recurrence_unit: "days",
   });
+  const [recurrenceValueInput, setRecurrenceValueInput] = useState<number | string>(1);
   const [errors, setErrors] = useState<FormErrors>({ name: null, recurrence_value: null, recurrence_unit: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const handleClose = () => {
     setFormData({ name: "", recurrence_value: 1, recurrence_unit: "days" });
+    setRecurrenceValueInput(1);
     setErrors({ name: null, recurrence_value: null, recurrence_unit: null });
     setApiError(null);
     onClose();
   };
 
   const validateForm = (): boolean => {
+    // Jeśli pole jest puste lub wartość < 1, ustaw błąd
+    if (recurrenceValueInput === '' || typeof recurrenceValueInput === 'number' && recurrenceValueInput < 1) {
+      setErrors(prev => ({ ...prev, recurrence_value: 'Wartość musi być liczbą większą od 0' }));
+      return false;
+    }
+
     try {
       // Walidacja z pełnymi danymi (z space_id)
       createTaskSchema.parse({
         space_id: spaceId,
         ...formData,
+        recurrence_value: typeof recurrenceValueInput === 'number' ? recurrenceValueInput : parseInt(recurrenceValueInput, 10),
       });
+      setErrors({ name: null, recurrence_value: null, recurrence_unit: null });
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -78,6 +88,7 @@ export function CreateTaskModal({ isOpen, onClose, spaceId, onTaskCreated }: Cre
         body: JSON.stringify({
           space_id: spaceId,
           ...formData,
+          recurrence_value: typeof recurrenceValueInput === 'number' ? recurrenceValueInput : parseInt(recurrenceValueInput, 10),
         }),
       });
 
@@ -145,9 +156,15 @@ export function CreateTaskModal({ isOpen, onClose, spaceId, onTaskCreated }: Cre
 
           {/* Cykliczność */}
           <RecurrenceInputs
-            value={formData.recurrence_value}
+            value={recurrenceValueInput}
             unit={formData.recurrence_unit}
-            onValueChange={(value) => setFormData({ ...formData, recurrence_value: value })}
+            onValueChange={(value) => {
+              setRecurrenceValueInput(value);
+              if (typeof value === 'number' && value > 0) {
+                setFormData({ ...formData, recurrence_value: value });
+                setErrors({ ...errors, recurrence_value: null });
+              }
+            }}
             onUnitChange={(unit) => setFormData({ ...formData, recurrence_unit: unit })}
             valueError={errors.recurrence_value || undefined}
             disabled={isSubmitting}

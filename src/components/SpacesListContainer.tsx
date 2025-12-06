@@ -35,6 +35,14 @@ export function SpacesListContainer() {
 
   useEffect(() => {
     fetchSpaces();
+    
+    // Sprawdzenie czy modal ma być otwarty (z parametru URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('openModal') === 'true') {
+      setIsModalOpen(true);
+      // Usuń parametr z URL bez przeładowania strony
+      window.history.replaceState({}, '', '/spaces');
+    }
   }, []);
 
   console.log(spaces);
@@ -99,7 +107,13 @@ export function SpacesListContainer() {
           <h1 className="text-3xl font-bold">Moje przestrzenie</h1>
           <Button onClick={handleOpenModal}>Dodaj nową przestrzeń</Button>
         </div>
-        <EmptyState />
+        <EmptyState
+          icon="🏠"
+          iconLabel="Brak przestrzeni"
+          title="Brak przestrzeni"
+          description="Utwórz swoją pierwszą przestrzeń, aby rozpocząć organizowanie zadań domowych."
+          iconSize="md"
+        />
         <CreateSpaceModal isOpen={isModalOpen} onClose={handleCloseModal} onSpaceCreated={handleSpaceCreated} />
       </div>
     );

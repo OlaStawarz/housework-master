@@ -43,9 +43,20 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
 
   // Hook do mutacji zadań (complete, postpone, update, delete)
   const { completeTask, postponeTask, updateTask, deleteTask, isDeletingTask } = useTaskMutations({
-    onPostponeSuccess: refetch, // Po sukcesie postpone odśwież listę zadań
-    onUpdateSuccess: refetch, // Po sukcesie update odśwież listę zadań
-    onDeleteSuccess: refetch, // Po sukcesie delete odśwież listę zadań
+    onCompleteSuccess: () => {
+      // Odświeżenie po 3 sekundach
+      setTimeout(() => {
+        refetch();
+      }, 3000);
+    },
+    onPostponeSuccess: () => {
+      // Odświeżenie po 3 sekundach
+      setTimeout(() => {
+        refetch();
+      }, 3000);
+    },
+    onUpdateSuccess: refetch, // Update od razu
+    onDeleteSuccess: refetch, // Delete od razu
   });
 
   // Grupowanie zadań (memoizowane)

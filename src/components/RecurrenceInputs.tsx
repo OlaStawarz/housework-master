@@ -4,9 +4,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { RecurrenceUnit } from "@/types";
 
 interface RecurrenceInputsProps {
-  value: number;
+  value: number | string;
   unit: RecurrenceUnit;
-  onValueChange: (value: number) => void;
+  onValueChange: (value: number | string) => void;
   onUnitChange: (unit: RecurrenceUnit) => void;
   valueError?: string | null;
   disabled?: boolean;
@@ -21,8 +21,17 @@ export function RecurrenceInputs({
   disabled = false,
 }: RecurrenceInputsProps) {
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const num = parseInt(e.target.value, 10);
-    if (!isNaN(num) && num > 0) {
+    const inputValue = e.target.value;
+    
+    // Pozwól na puste pole
+    if (inputValue === '') {
+      onValueChange('');
+      return;
+    }
+    
+    // Sprawdź czy wartość jest liczbą
+    const num = parseInt(inputValue, 10);
+    if (!isNaN(num)) {
       onValueChange(num);
     }
   };

@@ -12,7 +12,8 @@ import type {
   UpdateTaskParams,
   DeleteTaskParams,
   CompleteTaskCommand,
-  PostponeTaskCommand
+  PostponeTaskCommand,
+  GetDashboardTasksParams
 } from '../../types';
 
 /**
@@ -806,4 +807,126 @@ export async function deleteTask(
     console.error('Error deleting task:', deleteError);
     throw new Error('Failed to delete task from database');
   }
+}
+
+/**
+ * Pobiera zagregowane zadania ze wszystkich przestrzeni użytkownika z możliwością segmentacji
+ * na trzy kategorie: overdue (przeterminowane), upcoming (nadchodzące), all (wszystkie)
+ * 
+ * @param supabase - Klient Supabase
+ * @param params - Parametry GetDashboardTasksParams (userId, filters)
+ * @returns Promise z danymi zadań i informacjami o paginacji
+ * @throws PageOutOfRangeError jeśli numer strony przekracza liczbę dostępnych stron
+ * @throws Error jeśli zapytanie do bazy danych nie powiedzie się
+ */
+export async function getDashboardTasks(
+  supabase: SupabaseClient,
+  params: GetDashboardTasksParams
+): Promise<TaskListDto> {
+  const { userId, filters } = params;
+  const {
+    section = 'all',
+    days_ahead = 7,
+    page = 1,
+    limit = 20,
+    sort = 'due_date.asc'
+  } = filters;
+
+  // Ograniczenie maksymalnego limitu
+  const effectiveLimit = Math.min(limit, 100);
+
+  // Przygotowanie zapytania bazowego z join do spaces
+  let query = supabase
+    .from('tasks')
+    .select(`
+      *,
+      space:spaces!inner(
+        id,
+        name,
+        space_type,
+        icon
+      )
+    `, { count: 'exact' })
+    .eq('user_id', userId);
+
+  // Logika warunkowego filtrowania w zależności od sekcji
+  const now = new Date();
+
+  if (section === 'overdue') {
+    // Przeterminowane: due_date < now
+    query = query.lt('due_date', now.toISOString());
+  } else if (section === 'upcoming') {
+    // Nadchodzące: due_date >= now AND due_date <= now + days_ahead
+    const targetDate = new Date(now);
+    targetDate.setDate(targetDate.getDate() + days_ahead);
+    query = query.gte('due_date', now.toISOString());
+    query = query.lte('due_date', targetDate.toISOString());
+  }
+  // Dla 'all': brak dodatkowego filtrowania po due_date
+
+  // Sortowanie
+  const [sortField, sortDirection] = sort.split('.') as [string, 'asc' | 'desc'];
+  query = query.order(sortField, { ascending: sortDirection === 'asc' });
+
+  // Paginacja - obliczanie zakresu
+  const from = (page - 1) * effectiveLimit;
+  const to = from + effectiveLimit - 1;
+  query = query.range(from, to);
+
+  // Wykonanie zapytania
+  const { data, error, count } = await query;
+
+  if (error) {
+    console.error('Error fetching dashboard tasks:', error);
+    throw new Error('Failed to fetch dashboard tasks from database');
+  }
+
+  // Obliczenie całkowitej liczby stron
+  const total = count || 0;
+  const totalPages = Math.ceil(total / effectiveLimit) || 1;
+
+  // Walidacja: sprawdzenie czy żądana strona istnieje
+  if (total > 0 && page > totalPages) {
+    throw new PageOutOfRangeError(page, totalPages);
+  }
+
+  // Mapowanie danych na TaskDto
+  const tasks: TaskDto[] = (data || []).map((task) => {
+    // Wyciągnięcie danych przestrzeni z relacji
+    const spaceData = Array.isArray(task.space) ? task.space[0] : task.space;
+    
+    return {
+      id: task.id,
+      space_id: task.space_id,
+      user_id: task.user_id,
+      name: task.name,
+      recurrence_value: task.recurrence_value,
+      recurrence_unit: task.recurrence_unit,
+      due_date: task.due_date,
+      status: task.status,
+      postponement_count: task.postponement_count,
+      last_completed_at: task.last_completed_at,
+      created_at: task.created_at,
+      updated_at: task.updated_at,
+      space: {
+        id: spaceData.id,
+        name: spaceData.name,
+        space_type: spaceData.space_type,
+        icon: spaceData.icon,
+      } as SpaceMinDto,
+    };
+  });
+
+  // Przygotowanie informacji o paginacji
+  const pagination: PaginationDto = {
+    page,
+    limit: effectiveLimit,
+    total,
+    total_pages: totalPages,
+  };
+
+  return {
+    data: tasks,
+    pagination,
+  };
 }

@@ -130,6 +130,21 @@ export interface GetTasksParams {
   filters: GetTasksQuery;
 }
 
+/** Parametry query dla GET /api/dashboard/tasks */
+export interface GetDashboardTasksQuery {
+  section?: DashboardSection;
+  days_ahead?: number;
+  page?: number;
+  limit?: number;
+  sort?: string;
+}
+
+/** Parametry dla funkcji getDashboardTasks w serwisie */
+export interface GetDashboardTasksParams {
+  userId: string;
+  filters: GetDashboardTasksQuery;
+}
+
 /** Parametry dla masowego tworzenia zadań z szablonów */
 export interface BulkCreateTasksParams {
   userId: string;
