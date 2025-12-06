@@ -15,7 +15,15 @@ interface TaskCardProps {
   showSpaceName?: boolean;
 }
 
-export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete, hideActions = false, showSpaceName = false }: TaskCardProps) {
+export function TaskCard({
+  task,
+  onComplete,
+  onPostpone,
+  onEdit,
+  onDelete,
+  hideActions = false,
+  showSpaceName = false,
+}: TaskCardProps) {
   // Stan lokalny do obsługi animacji ukończenia
   const [isCompleting, setIsCompleting] = useState(false);
 
@@ -44,7 +52,7 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete, hideA
     // Dla dat przeszłych
     if (diffDays < 0) {
       const absDays = Math.abs(diffDays);
-      
+
       // Dla zadań miesięcznych, oblicz różnicę w miesiącach
       if (recurrenceUnit === 'months' && absDays >= 25) {
         const diffMonths = Math.round(absDays / 30);
@@ -53,20 +61,20 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete, hideA
         }
         return { text: `${diffMonths} ${pluralizeMonths(diffMonths)} temu`, variant: "destructive" as const };
       }
-      
+
       return { text: `${absDays} ${pluralizeDays(absDays)} temu`, variant: "destructive" as const };
     }
-    
+
     // Dla daty dzisiejszej
     if (diffDays === 0) {
       return { text: "Dzisiaj", variant: "default" as const };
     }
-    
+
     // Dla jutra
     if (diffDays === 1) {
       return { text: "Jutro", variant: "secondary" as const };
     }
-    
+
     // Dla przyszłych dat
     // Dla zadań miesięcznych, oblicz różnicę w miesiącach
     if (recurrenceUnit === 'months' && diffDays >= 25) {
@@ -76,7 +84,7 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete, hideA
       }
       return { text: `Za ${diffMonths} ${pluralizeMonths(diffMonths)}`, variant: "outline" as const };
     }
-    
+
     return { text: `Za ${diffDays} ${pluralizeDays(diffDays)}`, variant: "outline" as const };
   };
 
@@ -91,19 +99,26 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete, hideA
       toast.error("To zadanie zostało już 3 razy przełożone. Czas je zrobić!");
       return; // Nie wykonuj akcji
     }
-    
+
     // Jeśli jest w trakcie ukończenia, zablokuj akcję
     if (isCompleting) {
       return;
     }
-    
+
     // W przeciwnym razie wykonaj normalną akcję postpone
     onPostpone(task.id);
   };
 
   return (
-    <div className={`p-4 border rounded-lg transition-all duration-300 ${isOverdue ? "border-destructive bg-destructive/5" : ""} ${isCompleting ? "opacity-50 scale-[0.98] bg-muted" : ""}`}>
-      <div className="flex items-start justify-between gap-4">
+    <div
+      className={`group relative overflow-hidden rounded-xl bg-card p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${isOverdue ? "bg-destructive/5" : ""} ${isCompleting ? "opacity-50 scale-[0.98] bg-muted" : ""}`}
+    >
+      {/* Left accent bar */}
+      <div
+        className={`absolute left-0 top-0 bottom-0 w-1.5 transition-colors ${isOverdue ? "bg-destructive/40 group-hover:bg-destructive" : "bg-primary/20 group-hover:bg-primary"}`}
+      />
+
+      <div className="pl-3 flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 flex-1">
           <Checkbox
             id={`task-${task.id}`}
@@ -112,56 +127,66 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete, hideA
             disabled={isCompleting}
             className="mt-1 transition-all duration-300"
           />
-              <div className={`flex-1 transition-all duration-300 ${isCompleting ? "line-through text-muted-foreground" : ""}`}>
-                <label htmlFor={`task-${task.id}`} className="font-medium cursor-pointer">
-                  {task.name}
-                  {showSpaceName && task.space && (
-                    <span className="text-sm text-muted-foreground font-normal ml-2">
-                      ({task.space.name})
-                    </span>
-                  )}
-                </label>
-                <div className="mt-1">
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${
-                      dueDateInfo.variant === "destructive"
-                        ? "bg-destructive/10 text-destructive"
-                        : dueDateInfo.variant === "default"
-                          ? "bg-primary/10 text-primary"
-                          : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {dueDateInfo.text}
-                  </span>
-                </div>
-              </div>
+          <div
+            className={`flex-1 transition-all duration-300 ${isCompleting ? "line-through text-muted-foreground" : ""}`}
+          >
+            <label htmlFor={`task-${task.id}`} className="font-medium cursor-pointer">
+              {task.name}
+              {showSpaceName && task.space && (
+                <span className="text-sm text-muted-foreground font-normal ml-2">({task.space.name})</span>
+              )}
+            </label>
+            <div className="mt-1">
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full ${
+                  dueDateInfo.variant === "destructive"
+                    ? "bg-destructive/10 text-destructive"
+                    : dueDateInfo.variant === "default"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {dueDateInfo.text}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           {isOverdue && (
             <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handlePostponeClick} 
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePostponeClick}
                 disabled={isCompleting}
                 className={`w-full ${isPostponeLimitReached ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Zrobię to jutro
               </Button>
               {isPostponeLimitReached && (
-                <span className="text-xs text-destructive px-2">
-                  Zadanie przełożone 3 razy!
-                </span>
+                <span className="text-xs text-destructive px-2">Zadanie przełożone 3 razy!</span>
               )}
             </div>
           )}
           {!hideActions && (
             <div className="flex gap-2 w-full sm:w-auto">
-              <Button variant="ghost" size="sm" onClick={() => onEdit(task.id)} disabled={isCompleting} className="flex-1 sm:flex-none">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(task.id)}
+                disabled={isCompleting}
+                className="flex-1 sm:flex-none"
+              >
                 Edytuj
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => onDelete(task.id)} disabled={isCompleting} className="flex-1 sm:flex-none">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(task.id)}
+                disabled={isCompleting}
+                className="flex-1 sm:flex-none"
+              >
                 Usuń
               </Button>
             </div>

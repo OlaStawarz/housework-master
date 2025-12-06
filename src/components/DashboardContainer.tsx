@@ -109,9 +109,11 @@ export function DashboardContainer() {
     );
   }
 
-  // Są przestrzenie, ale brak zadań
-  const hasNoTasks = !isLoadingOverdue && !isLoadingUpcoming && 
-                     overdueTasks.length === 0 && upcomingTasks.length === 0;
+  // Stan ładowania zadań
+  const isLoadingTasks = isLoadingOverdue || isLoadingUpcoming;
+
+  // Są przestrzenie, ale brak zadań (po załadowaniu)
+  const hasNoTasks = !isLoadingTasks && overdueTasks.length === 0 && upcomingTasks.length === 0;
 
   if (hasNoTasks) {
     return (
@@ -136,114 +138,107 @@ export function DashboardContainer() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-            <p className="text-muted-foreground">
-              {formattedDate}
-            </p>
+            <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-2">
+              <span className="text-primary">Sprawdź swoje zadania!</span>
+            </h1>
+            <p className="text-lg text-muted-foreground font-medium">{formattedDate}</p>
           </div>
         </div>
       </div>
 
-      <div className="space-y-8">
-        {/* Sekcja Zaległe */}
-        {(isLoadingOverdue || overdueTasks.length > 0 || overdueError) && (
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-destructive">
-                Zaległe {overdueTasks.length > 0 && `(${overdueTasks.length})`}
-              </h2>
-            </div>
+      {/* Skeleton podczas ładowania */}
+      {isLoadingTasks && <TasksLoadingSkeleton />}
 
-            {isLoadingOverdue && <TasksLoadingSkeleton />}
-
-            {overdueError && (
-              <div className="p-4 border border-destructive rounded-lg bg-destructive/5">
-                <p className="text-destructive">{overdueError}</p>
+      {/* Sekcje po załadowaniu */}
+      {!isLoadingTasks && (
+        <div className="space-y-8">
+          {/* Sekcja Zaległe */}
+          {(overdueTasks.length > 0 || overdueError) && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold text-destructive">
+                  Zaległe {overdueTasks.length > 0 && `(${overdueTasks.length})`}
+                </h2>
               </div>
-            )}
 
-            {!isLoadingOverdue && !overdueError && overdueTasks.length > 0 && (
-              <>
-                <div className="space-y-3">
-                  {overdueTasks.map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      onComplete={handleComplete}
-                      onPostpone={handlePostpone}
-                      onEdit={() => {}}
-                      onDelete={() => {}}
-                      hideActions
-                      showSpaceName
-                    />
-                  ))}
+              {overdueError && (
+                <div className="p-4 border border-destructive rounded-lg bg-destructive/5">
+                  <p className="text-destructive">{overdueError}</p>
                 </div>
-                {hasMoreOverdue && (
-                  <div className="mt-4 text-center">
-                    <Button
-                      variant="outline"
-                      onClick={loadMoreOverdue}
-                      disabled={isLoadingMoreOverdue}
-                    >
-                      {isLoadingMoreOverdue ? "Ładowanie..." : "Pokaż więcej"}
-                    </Button>
+              )}
+
+              {!overdueError && overdueTasks.length > 0 && (
+                <>
+                  <div className="space-y-3">
+                    {overdueTasks.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        onComplete={handleComplete}
+                        onPostpone={handlePostpone}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
+                        hideActions
+                        showSpaceName
+                      />
+                    ))}
                   </div>
-                )}
-              </>
-            )}
-          </section>
-        )}
+                  {hasMoreOverdue && (
+                    <div className="mt-4 text-center">
+                      <Button variant="outline" onClick={loadMoreOverdue} disabled={isLoadingMoreOverdue}>
+                        {isLoadingMoreOverdue ? "Ładowanie..." : "Pokaż więcej"}
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </section>
+          )}
 
-        {/* Sekcja Nadchodzące */}
-        {(isLoadingUpcoming || upcomingTasks.length > 0 || upcomingError) && (
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold">
-                Nadchodzące {upcomingTasks.length > 0 && `(${upcomingTasks.length})`}
-              </h2>
-            </div>
-
-            {isLoadingUpcoming && <TasksLoadingSkeleton />}
-
-            {upcomingError && (
-              <div className="p-4 border rounded-lg bg-muted">
-                <p className="text-muted-foreground">{upcomingError}</p>
+          {/* Sekcja Nadchodzące */}
+          {(upcomingTasks.length > 0 || upcomingError) && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold">
+                  Nadchodzące {upcomingTasks.length > 0 && `(${upcomingTasks.length})`}
+                </h2>
               </div>
-            )}
 
-            {!isLoadingUpcoming && !upcomingError && upcomingTasks.length > 0 && (
-              <>
-                <div className="space-y-3">
-                  {upcomingTasks.map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      onComplete={handleComplete}
-                      onPostpone={handlePostpone}
-                      onEdit={() => {}}
-                      onDelete={() => {}}
-                      hideActions
-                      showSpaceName
-                    />
-                  ))}
+              {upcomingError && (
+                <div className="p-4 border rounded-lg bg-muted">
+                  <p className="text-muted-foreground">{upcomingError}</p>
                 </div>
-                {hasMoreUpcoming && (
-                  <div className="mt-4 text-center">
-                    <Button
-                      variant="outline"
-                      onClick={loadMoreUpcoming}
-                      disabled={isLoadingMoreUpcoming}
-                    >
-                      {isLoadingMoreUpcoming ? "Ładowanie..." : "Pokaż więcej"}
-                    </Button>
+              )}
+
+              {!upcomingError && upcomingTasks.length > 0 && (
+                <>
+                  <div className="space-y-3">
+                    {upcomingTasks.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        onComplete={handleComplete}
+                        onPostpone={handlePostpone}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
+                        hideActions
+                        showSpaceName
+                      />
+                    ))}
                   </div>
-                )}
-              </>
-            )}
-          </section>
-        )}
-      </div>
+                  {hasMoreUpcoming && (
+                    <div className="mt-4 text-center">
+                      <Button variant="outline" onClick={loadMoreUpcoming} disabled={isLoadingMoreUpcoming}>
+                        {isLoadingMoreUpcoming ? "Ładowanie..." : "Pokaż więcej"}
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </section>
+          )}
+        </div>
+      )}
     </div>
   );
 }
-

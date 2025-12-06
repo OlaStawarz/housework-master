@@ -5,6 +5,7 @@ import { LoadingSkeleton } from "./LoadingSkeleton";
 import { EmptyState } from "./EmptyState";
 import { Button } from "@/components/ui/button";
 import { CreateSpaceModal } from "./CreateSpaceModal";
+import { Plus } from "lucide-react";
 
 export function SpacesListContainer() {
   const [spaces, setSpaces] = useState<SpaceDto[]>([]);
@@ -35,13 +36,13 @@ export function SpacesListContainer() {
 
   useEffect(() => {
     fetchSpaces();
-    
+
     // Sprawdzenie czy modal ma być otwarty (z parametru URL)
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('openModal') === 'true') {
+    if (urlParams.get("openModal") === "true") {
       setIsModalOpen(true);
       // Usuń parametr z URL bez przeładowania strony
-      window.history.replaceState({}, '', '/spaces');
+      window.history.replaceState({}, "", "/spaces");
     }
   }, []);
 
@@ -66,6 +67,7 @@ export function SpacesListContainer() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Moje przestrzenie</h1>
           <Button disabled onClick={handleOpenModal}>
+            <Plus className="h-4 w-4" />
             Dodaj nową przestrzeń
           </Button>
         </div>
@@ -84,7 +86,11 @@ export function SpacesListContainer() {
       <div className="container mx-auto max-w-5xl px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Moje przestrzenie</h1>
-          <Button onClick={handleOpenModal}>Dodaj nową przestrzeń</Button>
+          <Button onClick={handleOpenModal}>
+            {" "}
+            <Plus className="h-4 w-4" />
+            Dodaj nową przestrzeń
+          </Button>
         </div>
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
           <div className="text-6xl mb-6" role="img" aria-label="Błąd">
@@ -105,7 +111,11 @@ export function SpacesListContainer() {
       <div className="container mx-auto max-w-5xl px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Moje przestrzenie</h1>
-          <Button onClick={handleOpenModal}>Dodaj nową przestrzeń</Button>
+          <Button onClick={handleOpenModal}>
+            {" "}
+            <Plus className="h-4 w-4" />
+            Dodaj nową przestrzeń
+          </Button>
         </div>
         <EmptyState
           icon="🏠"
@@ -124,7 +134,11 @@ export function SpacesListContainer() {
     <div className="container mx-auto max-w-5xl px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Moje przestrzenie</h1>
-        <Button onClick={handleOpenModal}>Dodaj nową przestrzeń</Button>
+        <Button onClick={handleOpenModal}>
+          {" "}
+          <Plus className="h-4 w-4" />
+          Dodaj nową przestrzeń
+        </Button>
       </div>
       <div
         className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"

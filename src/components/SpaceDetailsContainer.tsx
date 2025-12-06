@@ -163,13 +163,8 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-8">
-      <SpaceHeader space={space} onDeleteSpace={handleOpenDeleteModal} />
-
-      {/* Przycisk dodawania zadania */}
-      <div className="mb-6">
-        <Button onClick={handleCreateTask}>Dodaj zadanie</Button>
-      </div>
+    <div className="container mx-auto max-w-5xl px-4 py-8 relative">
+      <SpaceHeader space={space} onDeleteSpace={handleOpenDeleteModal} onAddTask={handleCreateTask} />
 
       {/* Lista zadań */}
       {isLoadingTasks && <TasksLoadingSkeleton />}
@@ -202,6 +197,28 @@ export function SpaceDetailsContainer({ spaceId }: SpaceDetailsContainerProps) {
           ))}
         </div>
       )}
+
+      {/* Floating Action Button for mobile */}
+      <button
+        onClick={handleCreateTask}
+        className="fixed bottom-6 right-6 p-4 bg-primary text-primary-foreground rounded-full shadow-lg md:hidden z-50 hover:bg-primary/90 transition-colors"
+        aria-label="Dodaj zadanie"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+      </button>
 
       {/* Modal tworzenia zadania */}
       <CreateTaskModal
