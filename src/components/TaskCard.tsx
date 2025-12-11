@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { TaskDto } from "@/types";
 import { pluralizeDays, pluralizeMonths } from "@/lib/utils/pluralize";
+import { MotivationalMessageText } from "@/components/motivational/MotivationalMessageText";
 
 interface TaskCardProps {
   task: TaskDto;
@@ -148,6 +149,9 @@ export function TaskCard({
               >
                 {dueDateInfo.text}
               </span>
+            </div>
+            <div className="mt-2">
+              <MotivationalMessageText taskId={task.id} taskName={task.name} taskDueDate={task.due_date} />
             </div>
           </div>
         </div>
