@@ -127,6 +127,17 @@ Aplikacja ma na celu rozwiązanie tych problemów poprzez stworzenie prostego sy
 - Po potwierdzeniu, konto użytkownika oraz wszystkie powiązane z nim dane (przestrzenie, zadania) są trwale usuwane z systemu.
 - Użytkownik jest automatycznie wylogowywany z aplikacji.
 
+#### US-005: Resetowanie hasła
+
+**Opis:** Jako użytkownik, który zapomniał hasła, chcę mieć możliwość zresetowania go za pomocą mojego adresu e-mail, abym mógł odzyskać dostęp do konta.
+
+**Kryteria akceptacji:**
+- Na ekranie logowania dostępna jest opcja "Zapomniałeś hasła?".
+- Użytkownik może wprowadzić adres e-mail, na który zostanie wysłany link resetujący.
+- Po kliknięciu w link z wiadomości e-mail, użytkownik jest przekierowywany na ekran ustawiania nowego hasła.
+- Formularz zmiany hasła wymaga podania nowego hasła i jego potwierdzenia.
+- Po pomyślnej zmianie hasła użytkownik może zalogować się przy użyciu nowych danych.
+
 ### Onboarding
 
 #### US-005: Pierwsze uruchomienie aplikacji
