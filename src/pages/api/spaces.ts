@@ -2,8 +2,6 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { listSpaces, createSpace, SpaceTypeNotFoundError, DuplicateSpaceNameError, PageOutOfRangeError } from '../../lib/services/spacesService';
-import { DEFAULT_USER_ID } from '../../db/supabase.client';
-import type { CreateSpaceCommand, SpaceDto } from '../../types';
 import { validateSupabaseClient, successResponse, errorResponse, validationErrorResponse } from '../../lib/utils';
 
 export const prerender = false;
@@ -54,7 +52,11 @@ export const GET: APIRoute = async (context) => {
     const clientError = validateSupabaseClient(supabase);
     if (clientError) return clientError;
 
-    const userId = DEFAULT_USER_ID;
+    const user = context.locals.user;
+    if (!user) {
+      return errorResponse('unauthorized', 'User not logged in', 401);
+    }
+    const userId = user.id;
 
     // Walidacja parametrów query
     const url = new URL(context.request.url);
@@ -113,7 +115,11 @@ export const POST: APIRoute = async (context) => {
     const clientError = validateSupabaseClient(supabase);
     if (clientError) return clientError;
 
-    const userId = DEFAULT_USER_ID;
+    const user = context.locals.user;
+    if (!user) {
+      return errorResponse('unauthorized', 'User not logged in', 401);
+    }
+    const userId = user.id;
 
     // Walidacja body request
     const body = await context.request.json();

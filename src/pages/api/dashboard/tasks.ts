@@ -2,7 +2,6 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import * as tasksService from '../../../lib/services/tasksService';
 import type { GetDashboardTasksParams } from '../../../types';
-import { DEFAULT_USER_ID } from '@/db/supabase.client';
 
 /**
  * Wyłączenie prerenderingu dla endpointu API
@@ -38,8 +37,22 @@ const getDashboardTasksQuerySchema = z.object({
  * - 500: błąd serwera
  */
 export const GET: APIRoute = async ({ request, locals }) => {
-  const userId = DEFAULT_USER_ID;
+  const user = locals.user;
   const supabase = locals.supabase;
+
+  if (!user) {
+    return new Response(
+      JSON.stringify({
+        error: {
+          code: 'unauthorized',
+          message: 'User not logged in',
+        },
+      }),
+      { status: 401, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const userId = user.id;
 
   try {
     // Parsowanie query params z URL

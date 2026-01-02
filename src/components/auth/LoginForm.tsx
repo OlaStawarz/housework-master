@@ -44,8 +44,7 @@ export function LoginForm() {
       });
 
       if (response.ok) {
-        toast.success("Zalogowano pomyślnie");
-        window.location.href = "/dashboard";
+        window.location.href = "/dashboard?login_success=true";
       } else {
         const errorData = await response.json().catch(() => ({}));
         toast.error(errorData.message || "Błąd logowania. Sprawdź dane.");

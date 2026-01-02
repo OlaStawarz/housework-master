@@ -1,7 +1,6 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { bulkCreateFromTemplates, SpaceNotFoundForBulkError } from '../../../../../lib/services/tasksService';
-import { DEFAULT_USER_ID } from '../../../../../db/supabase.client';
 import type { BulkCreateTasksCommand } from '../../../../../types';
 import { validateSupabaseClient, successResponse, errorResponse, validationErrorResponse } from '../../../../../lib/utils';
 
@@ -57,7 +56,12 @@ export const POST: APIRoute = async (context) => {
     const clientError = validateSupabaseClient(supabase);
     if (clientError) return clientError;
 
-    const userId = DEFAULT_USER_ID;
+    const user = context.locals.user;
+    if (!user) {
+      return errorResponse('Unauthorized', 'User not logged in', 401);
+    }
+    const userId = user.id;
+
     const { spaceId } = context.params;
 
     // Walidacja parametru URL

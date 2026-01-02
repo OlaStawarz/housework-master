@@ -1,9 +1,10 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { DashboardContainer } from "@/components/DashboardContainer";
+import { LoginSuccessHandler } from "@/components/auth/LoginSuccessHandler";
 ---
 
 <AppLayout title="Dashboard - Housework Master">
+  <LoginSuccessHandler client:load />
   <DashboardContainer client:load />
 </AppLayout>
-

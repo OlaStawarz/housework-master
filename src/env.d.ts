@@ -6,16 +6,25 @@ import type { Database } from './db/database.types.ts';
 declare global {
   namespace App {
     interface Locals {
-      supabase: SupabaseClient<Database>;
+      supabase: SupabaseClient<Database, 'public'>;
+      user: {
+        id: string;
+        email?: string;
+        user_metadata?: {
+          avatar_url?: string;
+          full_name?: string;
+          [key: string]: any;
+        };
+      } | null;
     }
   }
 }
 
 interface ImportMetaEnv {
-  readonly SUPABASE_URL: string;
-  readonly SUPABASE_KEY: string;
+  readonly PUBLIC_SUPABASE_URL: string;
+  readonly PUBLIC_SUPABASE_KEY: string; // Anon key
   readonly OPENROUTER_API_KEY: string;
-  // more env variables...
+  readonly PUBLIC_SITE_URL: string;
 }
 
 interface ImportMeta {

@@ -2,7 +2,6 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { generateMessage, AIAPIError, AIRateLimitError } from '../../../../../lib/services/motivationalMessageService';
 import { validateSupabaseClient, errorResponse, validationErrorResponse, successResponse } from '../../../../../lib/utils';
-import { DEFAULT_USER_ID } from '../../../../../db/supabase.client';
 import { TaskNotFoundError } from '@/lib/services/tasksService';
 
 export const prerender = false;
@@ -52,7 +51,11 @@ export const POST: APIRoute = async (context) => {
     const clientError = validateSupabaseClient(supabase);
     if (clientError) return clientError;
 
-    const userId = DEFAULT_USER_ID;
+    const user = context.locals.user;
+    if (!user) {
+      return errorResponse('Unauthorized', 'User not logged in', 401);
+    }
+    const userId = user.id;
 
     // Walidacja parametru ścieżki taskId
     const { taskId } = context.params;

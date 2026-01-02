@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { getTaskById, updateTaskRecurrence, deleteTask, TaskNotFoundError } from '../../../lib/services/tasksService';
 import { validateSupabaseClient, successResponse, errorResponse, validationErrorResponse } from '../../../lib/utils';
 import { editTaskSchema } from '../tasks';
-import { DEFAULT_USER_ID } from '@/db/supabase.client';
 
 export const prerender = false;
 
@@ -36,12 +35,12 @@ export const GET: APIRoute = async (context) => {
     if (clientError) return clientError;
 
     // Guard clause - sprawdzenie autoryzacji
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    const user = context.locals.user;
+    if (!user) {
       return errorResponse('Unauthorized', 'User not authenticated', 401);
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
 
     // Walidacja parametru ścieżki taskId
     const { taskId } = context.params;
@@ -97,7 +96,11 @@ export const PATCH: APIRoute = async (context) => {
     const clientError = validateSupabaseClient(supabase);
     if (clientError) return clientError;
 
-    const userId = DEFAULT_USER_ID;
+    const user = context.locals.user;
+    if (!user) {
+      return errorResponse('Unauthorized', 'User not logged in', 401);
+    }
+    const userId = user.id;
 
     // Walidacja parametru ścieżki taskId
     const { taskId } = context.params;

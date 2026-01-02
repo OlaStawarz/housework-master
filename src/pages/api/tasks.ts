@@ -8,7 +8,6 @@ import {
   DuplicateTaskError,
 } from "../../lib/services/tasksService";
 import { validateSupabaseClient, successResponse, errorResponse, validationErrorResponse } from "../../lib/utils";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 
 export const prerender = false;
 
@@ -76,7 +75,11 @@ export const GET: APIRoute = async (context) => {
     const clientError = validateSupabaseClient(supabase);
     if (clientError) return clientError;
 
-    const userId = DEFAULT_USER_ID;
+    const user = context.locals.user;
+    if (!user) {
+      return errorResponse("Unauthorized", "User not logged in", 401);
+    }
+    const userId = user.id;
 
     // Walidacja parametrów query
     const url = new URL(context.request.url);
@@ -142,7 +145,11 @@ export const POST: APIRoute = async (context) => {
     const clientError = validateSupabaseClient(supabase);
     if (clientError) return clientError;
 
-    const userId = DEFAULT_USER_ID;
+    const user = context.locals.user;
+    if (!user) {
+      return errorResponse("Unauthorized", "User not logged in", 401);
+    }
+    const userId = user.id;
 
     // Parsowanie i walidacja body
     let body;

@@ -2,14 +2,13 @@
 import AuthLayout from "../layouts/AuthLayout.astro";
 import { LoginForm } from "../components/auth/LoginForm";
 
-// TODO: Jeśli użytkownik jest już zalogowany -> przekierowanie na /dashboard
-// const user = Astro.locals.user;
-// if (user) {
-//   return Astro.redirect("/dashboard");
-// }
+// Jeśli użytkownik jest już zalogowany -> przekierowanie na /dashboard
+const user = Astro.locals.user;
+if (user) {
+  return Astro.redirect("/dashboard");
+}
 ---
 
 <AuthLayout title="Logowanie | Housework Master">
   <LoginForm client:load />
 </AuthLayout>
-
