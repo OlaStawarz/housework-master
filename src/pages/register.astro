@@ -1,0 +1,15 @@
+---
+import AuthLayout from "../layouts/AuthLayout.astro";
+import { RegisterForm } from "../components/auth/RegisterForm";
+
+// TODO: Jeśli użytkownik jest już zalogowany -> przekierowanie na /dashboard
+// const user = Astro.locals.user;
+// if (user) {
+//   return Astro.redirect("/dashboard");
+// }
+---
+
+<AuthLayout title="Rejestracja | Housework Master">
+  <RegisterForm client:load />
+</AuthLayout>
+

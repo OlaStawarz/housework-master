@@ -9,7 +9,7 @@ export interface NavigationUser {
 }
 
 export interface NavigationProps {
-  user: NavigationUser;
+  user: NavigationUser | null;
   currentPath: string;
 }
 
@@ -19,4 +19,3 @@ export interface NavLink {
   icon?: React.ComponentType<{ className?: string }>;
   isActive: boolean;
 }
-

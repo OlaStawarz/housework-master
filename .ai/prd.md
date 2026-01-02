@@ -99,9 +99,11 @@ Aplikacja ma na celu rozwiązanie tych problemów poprzez stworzenie prostego sy
 
 #### US-002: Logowanie do aplikacji
 
-**Opis:** Jako zarejestrowany użytkownik, chcę móc zalogować się do aplikacji przy użyciu mojego e-maila i hasła, aby uzyskać dostęp do moich przestrzeni i zadań.
+**Opis:** Jako zarejestrowany użytkownik, chcę móc zalogować się do aplikacji przy użyciu mojego e-maila i hasła, aby uzyskać dostęp do moich przestrzeni i zadań. Jako niezalogowany użytkownik nie mam dostępu do funkcjonalności aplikacji.
 
 **Kryteria akceptacji:**
+- Strona startowa dla niezalogowanego użytkownika zawiera zapowiedź tego, jak wygląda aplikacja - prezentuje listę przykładowych zadań na dashboardzie w różnym statusie. Dodatkowo zawiera przycisk umożliwiający przejście do formularza logowania.
+- Dostęp do funkcjonalności aplikacji takich jak dahsboard i przestrzenie jest zablokowany.
 - Formularz logowania zawiera pola: adres e-mail, hasło.
 - Po poprawnym wprowadzeniu danych i kliknięciu "Zaloguj", użytkownik jest przenoszony na ekran główny.
 - W przypadku wprowadzenia błędnego e-maila lub hasła, użytkownik widzi stosowny komunikat o błędzie.
