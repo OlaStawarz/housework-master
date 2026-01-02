@@ -73,8 +73,7 @@ export function MotivationalMessageText({ taskId, taskName, taskDueDate }: Motiv
       {messageText ? (
         <>
           {messageText}
-          {isGenerating && <span className="ml-2 text-xs text-primary">Generuję...</span>}
-          {hasError && <span className="ml-2 text-xs text-destructive">Błąd komunikacji</span>}
+          {hasError && <span className="ml-2 text-xs text-destructive">{FALLBACK_TEXT}</span>}
         </>
       ) : (
         <MessageInlineFallback text={FALLBACK_TEXT} />

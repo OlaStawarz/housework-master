@@ -1,10 +1,11 @@
+import { z } from 'zod';
 import type { SupabaseClient } from '../../db/supabase.client';
 import type {
   GenerateMotivationalMessageCommand,
   MotivationalMessageDto,
-  TaskDto
 } from '../../types';
 import { TaskNotFoundError } from './tasksService';
+import { OpenRouterService, OpenRouterError, type Message } from './openrouter.service';
 
 /**
  * Custom error class dla błędów AI API
@@ -53,45 +54,9 @@ export interface GetLatestMessageParams {
   taskId: string;
 }
 
-
-/**
- * Generuje przykładową wiadomość motywacyjną na podstawie tonu
- * (Mock implementation - bez faktycznego wywołania AI API)
- */
-function generateMockMotivationalMessage(
-  taskName: string,
-  tone: string,
-  maxLength: number
-): string {
-  const mockMessages = {
-    encouraging: [
-      `Świetnie! ${taskName} to krok ku czystszemu domowi. Dasz radę! 💪`,
-      `Brawo za podjęcie wyzwania! ${taskName} przyniesie spokój ducha.`,
-      `Jesteś mistrzem swojego domu! ${taskName} czeka na Twoją magię.`,
-      `Każde ${taskName} to inwestycja w komfort życia. Świetny wybór!`,
-      `Pamiętaj - czystość domu to czystość umysłu. Do dzieła!`,
-    ],
-    playful: [
-      `Czas na ${taskName}! Zróbmy z tego przygodę! 🎉`,
-      `Hej, superbohaterze! ${taskName} potrzebuje Twojej mocy!`,
-      `Chodź, pobawmy się w sprzątanie! ${taskName} będzie zabawą!`,
-      `Włącz muzykę i zróbmy ${taskName} tanecznie! 💃`,
-      `Bum! Bum! ${taskName} time! Jesteś gotowy na wyzwanie?`,
-    ],
-    neutral: [
-      `Czas na ${taskName}. Zróbmy to systematycznie.`,
-      `Kolejne ${taskName} na liście. Pozostańmy konsekwentni.`,
-      `Regularne ${taskName} pomaga utrzymać porządek.`,
-      `${taskName} to rutynowe zadanie domowe.`,
-      `Przejdźmy do ${taskName} zgodnie z planem.`,
-    ],
-  };
-
-  const messages = mockMessages[tone as keyof typeof mockMessages] || mockMessages.neutral;
-  const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-
-  return randomMessage;
-}
+const MotivationalResponseSchema = z.object({
+  message_text: z.string(),
+});
 
 /**
  * Generuje nową wiadomość motywacyjną dla zadania przy użyciu AI
@@ -123,8 +88,39 @@ export async function generateMessage(
     throw new TaskNotFoundError(taskId);
   }
 
-  // Wygenerowanie wiadomości (mock implementation)
-  const messageText = generateMockMotivationalMessage(task_name, tone, max_length);
+  // Wygenerowanie wiadomości przy użyciu OpenRouterService
+  let messageText: string;
+  try {
+    const openRouter = new OpenRouterService();
+    
+    const systemPrompt = `You are a motivational assistant for a housework app. 
+Generate a short, ${tone} motivational message for the user to complete their task: "${task_name}".
+Keep it under ${max_length} characters. Your response should be in Polish.
+Return ONLY a valid JSON object with a single key "message_text".`;
+
+    const messages: Message[] = [
+      { role: 'system', content: systemPrompt },
+    ];
+
+    const result = await openRouter.getStructuredCompletion(
+      messages,
+      MotivationalResponseSchema,
+      {
+        temperature: 0.8, // Trochę kreatywności dla motywacji
+      }
+    );
+
+    messageText = result.message_text;
+  } catch (error) {
+    if (error instanceof OpenRouterError) {
+      if (error.status === 429) {
+        throw new AIRateLimitError('AI rate limit exceeded');
+      }
+      throw new AIAPIError(error.message, error.status);
+    }
+    // Re-throw other errors (e.g. unexpected)
+    throw new AIAPIError(error instanceof Error ? error.message : 'Unknown AI error');
+  }
 
   // Zapisanie wiadomości w bazie danych
   const { data: newMessage, error: insertError } = await supabase
