@@ -10,9 +10,10 @@ Web app to help users stay on top of household chores with recurring-task manage
    - [Prerequisites](#prerequisites)  
    - [Installation & Setup](#installation--setup)  
 4. [Available Scripts](#available-scripts)  
-5. [Project Scope](#project-scope)  
-6. [Project Status](#project-status)  
-7. [License](#license)  
+5. [Running Tests](#running-tests)
+6. [Project Scope](#project-scope)  
+7. [Project Status](#project-status)  
+8. [License](#license)  
 
 ---
 
@@ -41,6 +42,12 @@ By combining straightforward task management with contextual encouragement, Hous
 
 - **AI & Motivation System**  
   - Openrouter.ai (access to OpenAI/Anthropic/Google models, budget controls)  
+
+- **Testing**
+  - Vitest (Unit & Integration testing)
+  - React Testing Library (Component testing)
+  - Playwright (E2E testing)
+  - Supabase CLI (Local database environment for testing)
 
 - **CI/CD & Hosting**  
   - GitHub Actions (pipelines)  
@@ -106,6 +113,30 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 - `npm run format`  
   Format code with Prettier.
+
+## Running Tests
+
+### Unit & Component Tests (Vitest)
+
+Unit tests verify individual functions and React components.
+
+- `npm run test` (or `npm test`)  
+  Run all unit tests in headless mode.
+
+- `npm run test:ui`  
+  Open the interactive Vitest UI to debug tests.
+
+### End-to-End Tests (Playwright)
+
+E2E tests verify the full application flow in a real browser environment.
+
+- `npm run test:e2e`  
+  Run all E2E tests in headless mode.
+
+- `npm run test:e2e:ui`  
+  Open the interactive Playwright UI.
+
+> **Note:** E2E tests run against the production build. The test command automatically builds the app and starts the preview server.
 
 ## Project Scope
 
