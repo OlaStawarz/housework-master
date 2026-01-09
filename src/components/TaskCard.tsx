@@ -55,7 +55,7 @@ export function TaskCard({
       const absDays = Math.abs(diffDays);
 
       // Dla zadań miesięcznych, oblicz różnicę w miesiącach
-      if (recurrenceUnit === 'months' && absDays >= 25) {
+      if (recurrenceUnit === 'months' && absDays >= 28) {
         const diffMonths = Math.round(absDays / 30);
         if (diffMonths === 1) {
           return { text: "Miesiąc temu", variant: "destructive" as const };
@@ -78,7 +78,7 @@ export function TaskCard({
 
     // Dla przyszłych dat
     // Dla zadań miesięcznych, oblicz różnicę w miesiącach
-    if (recurrenceUnit === 'months' && diffDays >= 25) {
+    if (recurrenceUnit === 'months' && diffDays >= 28) {
       const diffMonths = Math.round(diffDays / 30);
       if (diffMonths === 1) {
         return { text: "Za miesiąc", variant: "outline" as const };
