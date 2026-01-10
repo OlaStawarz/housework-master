@@ -113,6 +113,7 @@ export function TaskCard({
   return (
     <div
       className={`group relative overflow-hidden rounded-xl bg-card p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${isOverdue ? "bg-destructive/5" : ""} ${isCompleting ? "opacity-50 scale-[0.98] bg-muted" : ""}`}
+      data-testid={`task-card-${task.name}`}
     >
       {/* Left accent bar */}
       <div
@@ -127,6 +128,7 @@ export function TaskCard({
             onCheckedChange={handleCheckChange}
             disabled={isCompleting}
             className="mt-1 transition-all duration-300"
+            data-testid="complete-task-checkbox"
           />
           <div
             className={`flex-1 transition-all duration-300 ${isCompleting ? "line-through text-muted-foreground" : ""}`}
@@ -165,6 +167,7 @@ export function TaskCard({
                 onClick={handlePostponeClick}
                 disabled={isCompleting}
                 className={`w-full ${isPostponeLimitReached ? "opacity-50 cursor-not-allowed" : ""}`}
+                data-testid="postpone-task-button"
               >
                 Zrobię to jutro
               </Button>
@@ -181,6 +184,7 @@ export function TaskCard({
                 onClick={() => onEdit(task.id)}
                 disabled={isCompleting}
                 className="flex-1 sm:flex-none"
+                data-testid="edit-task-button"
               >
                 Edytuj
               </Button>
@@ -190,6 +194,7 @@ export function TaskCard({
                 onClick={() => onDelete(task.id)}
                 disabled={isCompleting}
                 className="flex-1 sm:flex-none"
+                data-testid="delete-task-button"
               >
                 Usuń
               </Button>

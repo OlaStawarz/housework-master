@@ -74,6 +74,7 @@ export function LoginForm() {
               type="email"
               placeholder="m@example.com"
               disabled={isLoading}
+              data-testid="email-input"
               {...register("email")}
             />
             {errors.email && (
@@ -94,13 +95,14 @@ export function LoginForm() {
               id="password"
               type="password"
               disabled={isLoading}
+              data-testid="password-input"
               {...register("password")}
             />
             {errors.password && (
               <p className="text-sm text-destructive">{errors.password.message}</p>
             )}
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading} data-testid="login-submit-button">
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -157,6 +157,7 @@ export function AddTasksFromTemplatesStep({ spaceId, spaceType, onFinish, onSkip
               checked={item.isSelected}
               onCheckedChange={() => handleToggle(index)}
               disabled={isSubmitting}
+              data-testid={`task-checkbox-${index}`}
             />
 
             <div className="flex-1 space-y-3">
@@ -200,10 +201,10 @@ export function AddTasksFromTemplatesStep({ spaceId, spaceType, onFinish, onSkip
       )}
 
       <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={onSkip} disabled={isSubmitting}>
+        <Button type="button" variant="outline" onClick={onSkip} disabled={isSubmitting} data-testid="skip-tasks-button">
           Pomiń
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} data-testid="add-tasks-submit-button">
           {isSubmitting ? "Dodawanie..." : "Dodaj wybrane zadania"}
         </Button>
       </div>

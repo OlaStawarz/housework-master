@@ -172,7 +172,11 @@ export const DELETE: APIRoute = async (context) => {
     const clientError = validateSupabaseClient(supabase);
     if (clientError) return clientError;
 
-    const userId =DEFAULT_USER_ID;
+    const user = context.locals.user;
+    if (!user) {
+      return errorResponse('Unauthorized', 'User not logged in', 401);
+    }
+    const userId = user.id;
 
     // Walidacja parametru ścieżki taskId
     const { taskId } = context.params;

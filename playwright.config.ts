@@ -1,11 +1,15 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config({ path: path.resolve(process.cwd(), '.env.test') });
 
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: 'html',
   use: {
     // Śledzenie błędów (Trace Viewer)
@@ -24,8 +28,13 @@ export default defineConfig({
 
   projects: [
     {
+      name: 'cleanup',
+      testMatch: /teardown\.ts/,
+    },
+    {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      teardown: 'cleanup',
     },
     // Zgodnie z zasadami: Initialize configuration only with Chromium/Desktop Chrome browser
   ],

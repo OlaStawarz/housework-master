@@ -122,6 +122,7 @@ export function CreateSpaceStep({ onSuccess, onCancel }: CreateSpaceStepProps) {
             disabled={isSubmitting}
             aria-invalid={!!errors.name}
             aria-describedby={errors.name ? "name-error" : undefined}
+            data-testid="space-name-input"
           />
           {errors.name && (
             <p id="name-error" className="text-sm text-destructive">
@@ -138,12 +139,12 @@ export function CreateSpaceStep({ onSuccess, onCancel }: CreateSpaceStepProps) {
             onValueChange={handleSpaceTypeChange}
             disabled={isSubmitting || isLoadingTypes}
           >
-            <SelectTrigger id="space-type">
+            <SelectTrigger id="space-type" data-testid="space-type-select-trigger">
               <SelectValue placeholder="Wybierz typ (opcjonalnie)" />
             </SelectTrigger>
             <SelectContent>
               {spaceTypes.map((type) => (
-                <SelectItem key={type.id} value={type.code}>
+                <SelectItem key={type.id} value={type.code} data-testid={`space-type-item-${type.code}`}>
                   {type.icon} {type.display_name}
                 </SelectItem>
               ))}
@@ -172,7 +173,7 @@ export function CreateSpaceStep({ onSuccess, onCancel }: CreateSpaceStepProps) {
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
           Anuluj
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} data-testid="create-space-submit-button">
           {isSubmitting ? "Tworzenie..." : "Utwórz"}
         </Button>
       </div>
