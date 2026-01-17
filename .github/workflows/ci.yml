@@ -7,6 +7,12 @@ on:
   pull_request:
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      run_e2e:
+        description: Run E2E tests
+        required: false
+        default: "true"
 
 permissions:
   contents: read
@@ -15,8 +21,8 @@ jobs:
   test_build:
     runs-on: ubuntu-22.04
     env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
     steps:
       - name: Checkout
@@ -36,4 +42,5 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run E2E tests
         run: npm run test:e2e
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e == 'true' }}
 
