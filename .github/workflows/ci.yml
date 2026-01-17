@@ -1,4 +1,4 @@
-name: Test & Build
+name: CI/CD
 
 on:
   push:
@@ -12,35 +12,84 @@ on:
       run_e2e:
         description: Run E2E tests
         required: false
-        default: "true"
+        default: true
+        type: boolean
+      deploy:
+        description: Deploy to Production
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
+  deployments: write
 
 jobs:
-  test_build:
+  build_and_test:
     runs-on: ubuntu-22.04
+    name: Build & Test
     env:
       PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       PUBLIC_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+
       - name: Setup Node.js and install dependencies
         uses: ./.github/actions/setup-node
+
       - name: Run unit tests
         run: npm run test:run
+
       - name: Build
         run: npm run build
+
+      # E2E Tests - uruchamiane na PR lub ręcznie
       - name: Cache Playwright browsers
-        uses: actions/cache@v5
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-      - name: Run E2E tests
-        run: npm run test:e2e
-        if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e == 'true' }}
 
+      - name: Install Playwright browsers
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.run_e2e == true) }}
+        run: npm run test:e2e
+
+      # Przekazanie artefaktów - potrzebne jeśli jesteśmy na masterze (do potencjalnego deployu)
+      - name: Upload build artifacts
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+  deploy:
+    needs: build_and_test
+    # Uruchom tylko jeśli jesteśmy na masterze ORAZ wybrano opcję deploy w manualnym uruchomieniu
+    if: ${{ github.ref == 'refs/heads/master' && inputs.deploy == true }}
+    runs-on: ubuntu-22.04
+    name: Deploy
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=housework-master
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

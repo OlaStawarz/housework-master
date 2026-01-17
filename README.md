@@ -51,7 +51,7 @@ By combining straightforward task management with contextual encouragement, Hous
 
 - **CI/CD & Hosting**  
   - GitHub Actions (pipelines)  
-  - DigitalOcean (Docker-based hosting)  
+  - Cloudflare Pages (Edge Hosting)  
 
 ## Getting Started Locally
 
