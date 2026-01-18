@@ -1,4 +1,4 @@
-name: CI/CD
+name: Housework Master CI/CD
 
 on:
   push:
@@ -25,66 +25,87 @@ permissions:
   deployments: write
 
 jobs:
-  build_and_test:
+  # 1. Testy jednostkowe
+  unit-test:
+    name: Unit Tests
     runs-on: ubuntu-22.04
-    name: Build & Test
+    environment: integration
     env:
       PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       PUBLIC_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js and install dependencies
-        uses: ./.github/actions/setup-node
-
-      - name: Run unit tests
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - name: Run Vitest
         run: npm run test:run
 
-      - name: Build
+  # 2. Próbne budowanie (sprawdza czy kod się kompiluje i typy TS są ok)
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-22.04
+    environment: integration
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - name: Build project
         run: npm run build
 
-      # E2E Tests - uruchamiane na PR lub ręcznie
-      - name: Cache Playwright browsers
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-
-      - name: Install Playwright browsers
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+  # 3. Testy E2E (Playwright) - najcięższe, więc warto je wyodrębnić
+  e2e-test:
+    name: E2E Tests
+    # Uruchom na PR lub manualnie, lub po pomyślnym buildzie na master (opcjonalnie)
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+    needs: [build-check] # Czekamy, aż build przejdzie, żeby nie marnować zasobów
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    environment: integration
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      # Playwright potrzebuje URL lub musi odpalić serwer sam (via playwright.config.ts webServer)
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run E2E tests
-        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.run_e2e == true) }}
+      - name: Run Playwright tests
         run: npm run test:e2e
 
-      # Przekazanie artefaktów - potrzebne jeśli jesteśmy na masterze (do potencjalnego deployu)
-      - name: Upload build artifacts
-        if: ${{ github.ref == 'refs/heads/master' }}
-        uses: actions/upload-artifact@v4
+      # Upload raportu tylko gdy testy padną
+      - uses: actions/upload-artifact@v4
+        if: failure()
         with:
-          name: dist
-          path: dist
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
 
+  # 4. Deployment
   deploy:
-    needs: build_and_test
-    # Uruchom tylko jeśli jesteśmy na masterze ORAZ wybrano opcję deploy w manualnym uruchomieniu
+    name: Deploy (Production)
+    needs: [unit-test, build-check, e2e-test]
+
     if: ${{ github.ref == 'refs/heads/master' && inputs.deploy == true }}
     runs-on: ubuntu-22.04
-    name: Deploy
-    environment: production
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
+    environment: production
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      
+      - name: Build for Production
+        run: npm run build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
