@@ -66,10 +66,15 @@ jobs:
       PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       PUBLIC_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      # Playwright potrzebuje URL lub musi odpalić serwer sam (via playwright.config.ts webServer)
+      CI: true
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
       
+      - name: Build project (for preview)
+        run: npm run build
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
