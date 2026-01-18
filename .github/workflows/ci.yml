@@ -57,8 +57,7 @@ jobs:
   # 3. Testy E2E (Playwright) - najcięższe, więc warto je wyodrębnić
   e2e-test:
     name: E2E Tests
-    # Uruchom na PR lub manualnie, lub po pomyślnym buildzie na master (opcjonalnie)
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/master' || (github.event_name == 'workflow_dispatch' && inputs.run_e2e == true) }}    
     needs: [build-check] # Czekamy, aż build przejdzie, żeby nie marnować zasobów
     runs-on: ubuntu-22.04
     timeout-minutes: 20
