@@ -20,7 +20,7 @@ export default defineConfig({
 
   // Konfiguracja serwera lokalnego (Astro)
   webServer: {
-    command: 'npm run preview',
+    command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
