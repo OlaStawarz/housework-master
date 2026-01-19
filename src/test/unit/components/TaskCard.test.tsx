@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { TaskCard } from '@/components/TaskCard';
 import type { TaskDto } from '@/types';
 import { toast } from 'sonner';
@@ -9,6 +9,10 @@ vi.mock('sonner', () => ({
   toast: {
     error: vi.fn(),
   },
+}));
+
+vi.mock('canvas-confetti', () => ({
+  default: vi.fn(),
 }));
 
 // Mockujemy komponent podrzędny, aby nie testować jego wewnętrznej logiki tutaj
@@ -206,6 +210,11 @@ describe('TaskCard', () => {
 
       const checkbox = screen.getByRole('checkbox');
       fireEvent.click(checkbox);
+
+      // Czekamy na zakończenie animacji (800ms opóźnienia w komponencie)
+      act(() => {
+        vi.advanceTimersByTime(800);
+      });
 
       expect(onComplete).toHaveBeenCalledTimes(1);
       expect(onComplete).toHaveBeenCalledWith(task.id);
