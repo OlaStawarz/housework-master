@@ -22,7 +22,7 @@ export function CreateSpaceStep({ onSuccess, onCancel }: CreateSpaceStepProps) {
   const [formData, setFormData] = useState<CreateSpaceFormData>({
     name: "",
     space_type: undefined,
-    icon: undefined,
+    icon: "🏠",
   });
   const [errors, setErrors] = useState<FormErrors>({ name: null, space_type: null, icon: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,7 +33,7 @@ export function CreateSpaceStep({ onSuccess, onCancel }: CreateSpaceStepProps) {
     setFormData({
       ...formData,
       space_type: value || undefined,
-      icon: selectedType?.icon || undefined,
+      icon: selectedType?.icon || formData.icon,
     });
   };
 
@@ -151,8 +151,13 @@ export function CreateSpaceStep({ onSuccess, onCancel }: CreateSpaceStepProps) {
             </SelectContent>
           </Select>
           {errors.space_type && <p className="text-sm text-destructive">{errors.space_type}</p>}
+          <div className="text-xs text-muted-foreground">
+            Wybierz typ przestrzeni, aby otrzymać listę sugerowanych zadań
+          </div>
+          
         </div>
       </div>
+
 
       {/* Ikona */}
       <div className="space-y-2">

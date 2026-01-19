@@ -127,16 +127,8 @@ export function DashboardContainer() {
   // Stan ładowania zadań
   const isLoadingTasks = isLoadingOverdue || isLoadingToday || isLoadingUpcoming;
 
-  // Są przestrzenie, ale brak zadań (po załadowaniu)
-  const hasNoTasks = !isLoadingTasks && overdueTasks.length === 0 && todayTasks.length === 0 && upcomingTasks.length === 0;
-
-  if (hasNoTasks) {
-    return (
-      <div className="container mx-auto max-w-5xl px-4 py-8">
-        <EmptyTasksState />
-      </div>
-    );
-  }
+  // Sprawdzenie czy są pilne zadania (zaległe lub na dzisiaj)
+  const hasUrgentTasks = overdueTasks.length > 0 || todayTasks.length > 0;
 
   // Formatowanie aktualnej daty
   const today = new Date();
@@ -167,6 +159,13 @@ export function DashboardContainer() {
       {/* Sekcje po załadowaniu */}
       {!isLoadingTasks && (
         <div className="space-y-8">
+          {/* Jeśli nie ma pilnych zadań, pokaż gratulacje */}
+          {!hasUrgentTasks && !overdueError && !todayError && (
+             <div className="mb-12">
+               <EmptyTasksState />
+             </div>
+          )}
+
           {/* Sekcja Zaległe */}
           {(overdueTasks.length > 0 || overdueError) && (
             <section>

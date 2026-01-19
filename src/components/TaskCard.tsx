@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { TaskDto } from "@/types";
@@ -34,9 +35,64 @@ export function TaskCard({
   }, [task.last_completed_at, task.due_date]);
 
   const handleCheckChange = (checked: boolean) => {
-    if (checked) {
+    if (checked) {    
+      const rect = document.getElementById(`task-${task.id}`)?.getBoundingClientRect();
+      
+      const defaults = {
+        spread: 360,
+        ticks: 50,
+        gravity: 0,
+        decay: 0.94,
+        startVelocity: 30,
+        colors: ['#FFE400', '#FFBD00', '#E89400', '#FFCA6C', '#FD9A9C', '#FF6077', '#FF36FF', '#7B41C7'],
+        zIndex: 10000,
+        disableForReducedMotion: false,
+      };
+
+      if (rect) {
+        const x = (rect.left + rect.width / 2) / window.innerWidth;
+        const y = (rect.top + rect.height / 2) / window.innerHeight;
+        
+        confetti({
+          ...defaults,
+          particleCount: 40,
+          scalar: 1.2,
+          shapes: ['star'],
+          origin: { x, y },
+          gravity: 1, // Reset grawitacji dla strzału
+          spread: 70, // Reset spread
+          startVelocity: 45, // Reset velocity
+          ticks: 200, // Reset ticks
+        });
+        
+        // Dodatkowy efekt - małe kółka
+        confetti({
+          ...defaults,
+          particleCount: 10,
+          scalar: 0.75,
+          shapes: ['circle'],
+          origin: { x, y },
+          gravity: 1,
+          spread: 70,
+          startVelocity: 45,
+          ticks: 200,
+        });
+      } else {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          zIndex: 10000,
+          disableForReducedMotion: false,
+        });
+      }
+
       setIsCompleting(true);
-      onComplete(task.id);
+      
+      // Opóźnienie wywołania onComplete, aby użytkownik zdążył zobaczyć konfetti i zaznaczenie
+      setTimeout(() => {
+        onComplete(task.id);
+      }, 800);
     }
   };
 

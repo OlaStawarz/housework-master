@@ -50,8 +50,6 @@ export function useTaskMutations({
 
       // Sukces (204 No Content)
       if (response.status === 204) {
-        toast.success("Zadanie zostało ukończone");
-
         // Wywołaj callback sukcesu (jeśli przekazany)
         if (onCompleteSuccess) {
           onCompleteSuccess();
