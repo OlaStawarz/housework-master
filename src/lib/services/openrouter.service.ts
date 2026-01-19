@@ -28,9 +28,9 @@ export class OpenRouterService {
   private readonly siteUrl: string;
   public readonly defaultModel: string;
 
-  constructor() {
-    this.apiKey = import.meta.env.OPENROUTER_API_KEY;
-    this.siteUrl = import.meta.env.PUBLIC_SITE_URL;
+  constructor(apiKey?: string, siteUrl?: string) {
+    this.apiKey = apiKey || import.meta.env.OPENROUTER_API_KEY;
+    this.siteUrl = siteUrl || import.meta.env.PUBLIC_SITE_URL;
     // Domyślny model, np. darmowy lub tani, można zmienić w przyszłości lub przenieść do env
     this.defaultModel = 'nvidia/nemotron-3-nano-30b-a3b:free';
 

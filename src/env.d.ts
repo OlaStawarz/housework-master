@@ -3,9 +3,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './db/database.types.ts';
 
+type Runtime = import('@astrojs/cloudflare').Runtime<Env>;
+
 declare global {
   namespace App {
-    interface Locals {
+    interface Locals extends Runtime {
       supabase: SupabaseClient<Database, 'public'>;
       user: {
         id: string;
@@ -18,6 +20,13 @@ declare global {
       } | null;
     }
   }
+}
+
+interface Env {
+  OPENROUTER_API_KEY: string;
+  PUBLIC_SITE_URL: string;
+  PUBLIC_SUPABASE_URL: string;
+  PUBLIC_SUPABASE_KEY: string;
 }
 
 interface ImportMetaEnv {

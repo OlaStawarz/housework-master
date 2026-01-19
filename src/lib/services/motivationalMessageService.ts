@@ -44,6 +44,8 @@ export interface GenerateMessageParams {
   userId: string;
   taskId: string;
   command: GenerateMotivationalMessageCommand;
+  apiKey?: string;
+  siteUrl?: string;
 }
 
 /**
@@ -73,7 +75,7 @@ export async function generateMessage(
   supabase: SupabaseClient,
   params: GenerateMessageParams
 ): Promise<MotivationalMessageDto> {
-  const { userId, taskId, command } = params;
+  const { userId, taskId, command, apiKey, siteUrl } = params;
   const { task_name, tone, max_length } = command;
 
   // Weryfikacja czy zadanie istnieje i należy do użytkownika
@@ -91,7 +93,7 @@ export async function generateMessage(
   // Wygenerowanie wiadomości przy użyciu OpenRouterService
   let messageText: string;
   try {
-    const openRouter = new OpenRouterService();
+    const openRouter = new OpenRouterService(apiKey, siteUrl);
     
     const systemPrompt = `You are a motivational assistant for a housework app. 
 Generate a short, ${tone} motivational message for the user to complete their task: "${task_name}".

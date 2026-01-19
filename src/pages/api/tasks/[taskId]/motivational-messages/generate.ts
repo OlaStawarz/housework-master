@@ -51,6 +51,12 @@ export const POST: APIRoute = async (context) => {
     const clientError = validateSupabaseClient(supabase);
     if (clientError) return clientError;
 
+    // Pobranie klucza API z runtime (Cloudflare) lub fallback do zmiennych środowiskowych (dev)
+    const runtime = context.locals.runtime;
+    const openRouterApiKey = runtime?.env?.OPENROUTER_API_KEY || import.meta.env.OPENROUTER_API_KEY;
+    const siteUrl = runtime?.env?.PUBLIC_SITE_URL || import.meta.env.PUBLIC_SITE_URL || context.url.origin;
+
+
     const user = context.locals.user;
     if (!user) {
       return errorResponse('Unauthorized', 'User not logged in', 401);
@@ -88,6 +94,8 @@ export const POST: APIRoute = async (context) => {
       userId,
       taskId: validatedTaskId,
       command,
+      apiKey: openRouterApiKey,
+      siteUrl,
     });
 
     // Zwrócenie utworzonej wiadomości z kodem 201
