@@ -69,7 +69,7 @@ describe('TaskCard', () => {
       expect(screen.getByText('Mycie okien')).toBeInTheDocument();
     });
 
-    it('renders "Dzisiaj" for current date', () => {
+    it('renders "Dzisiaj" for current date with sky-colored badge', () => {
       const task = createMockTask({ due_date: FIXED_DATE.toISOString() });
       render(
         <TaskCard 
@@ -81,7 +81,28 @@ describe('TaskCard', () => {
         />
       );
 
-      expect(screen.getByText('Dzisiaj')).toBeInTheDocument();
+      const badge = screen.getByText('Dzisiaj');
+      expect(badge).toBeInTheDocument();
+      // Zadania na dzisiaj powinny mieć niebieski (sky) styl
+      expect(badge).toHaveClass('bg-sky-100');
+      expect(badge).toHaveClass('text-sky-700');
+    });
+
+    it('renders today task card with sky-colored background', () => {
+      const task = createMockTask({ due_date: FIXED_DATE.toISOString() });
+      render(
+        <TaskCard 
+          task={task} 
+          onComplete={vi.fn()} 
+          onPostpone={vi.fn()} 
+          onEdit={vi.fn()} 
+          onDelete={vi.fn()} 
+        />
+      );
+
+      // Karta powinna mieć niebieskie tło dla zadań na dzisiaj
+      const card = screen.getByTestId('task-card-Test Task');
+      expect(card).toHaveClass('bg-sky-50');
     });
 
     it('renders "Jutro" for next day', () => {

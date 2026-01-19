@@ -84,6 +84,12 @@ Główne cele:
 *   **TC-TASK-05: Usuwanie zadania**
     Celem jest weryfikacja czyszczenia listy. Użytkownik usuwa wybrane zadanie. Oczekuje się jego trwałego zniknięcia z listy i bazy danych.
 
+*   **TC-TASK-06: Wyświetlanie sekcji "Dzisiaj" na dashboardzie**
+    Celem jest weryfikacja poprawnego grupowania zadań na dzisiaj. Użytkownik ma zadania z terminem na dzisiejszy dzień. Oczekuje się wyświetlenia sekcji "Dzisiaj" z odpowiednim wyróżnieniem wizualnym (niebieski pasek, tło).
+
+*   **TC-TASK-07: Rozdzielenie sekcji dashboard (Zaległe, Dzisiaj, Nadchodzące)**
+    Celem jest weryfikacja poprawnej segregacji zadań. System wyświetla trzy sekcje: "Zaległe" (due_date < początek dnia), "Dzisiaj" (due_date w granicach dnia), "Nadchodzące" (due_date od jutra). Oczekuje się poprawnego przypisania zadań do odpowiednich sekcji.
+
 ### Obszar 4: System Motywacyjny (AI)
 
 *   **TC-AI-01: Generowanie komunikatu motywacyjnego**

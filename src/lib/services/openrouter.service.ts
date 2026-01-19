@@ -31,8 +31,8 @@ export class OpenRouterService {
   constructor(apiKey?: string, siteUrl?: string) {
     this.apiKey = apiKey || import.meta.env.OPENROUTER_API_KEY;
     this.siteUrl = siteUrl || import.meta.env.PUBLIC_SITE_URL;
-    // Domyślny model, np. darmowy lub tani, można zmienić w przyszłości lub przenieść do env
-    this.defaultModel = 'nvidia/nemotron-3-nano-30b-a3b:free';
+    // Domyślny model: Google Gemini 2.0 Flash - bardzo szybki, tani i świetny w podążaniu za instrukcjami
+    this.defaultModel = 'google/gemini-2.0-flash-001'; 
 
     if (!this.apiKey) {
       throw new OpenRouterError(

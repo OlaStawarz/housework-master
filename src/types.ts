@@ -11,7 +11,7 @@ export type TaskStatus = 'pending' | 'postponed';
 /** Styl tonu dla wiadomości motywacyjnej */
 export type MotivationalTone = 'encouraging' | 'playful' | 'neutral';
 /** Sekcja dashboardu */
-export type DashboardSection = 'overdue' | 'upcoming' | 'all';
+export type DashboardSection = 'overdue' | 'today' | 'upcoming' | 'all';
 
 // ---------------------------------------------------------
 // DTO (Data Transfer Objects) - odpowiedzi API

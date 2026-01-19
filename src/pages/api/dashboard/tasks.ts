@@ -12,7 +12,7 @@ export const prerender = false;
  * Schema walidacji parametrów query dla GET /api/dashboard/tasks
  */
 const getDashboardTasksQuerySchema = z.object({
-  section: z.enum(['overdue', 'upcoming', 'all']).default('all'),
+  section: z.enum(['overdue', 'today', 'upcoming', 'all']).default('all'),
   days_ahead: z.coerce.number().int().min(1).default(7),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -24,7 +24,7 @@ const getDashboardTasksQuerySchema = z.object({
  * Pobiera zagregowane zadania ze wszystkich przestrzeni użytkownika z możliwością segmentacji
  * 
  * Query params:
- * - section (opcjonalny): 'overdue' | 'upcoming' | 'all' - typ segmentacji, domyślnie 'all'
+ * - section (opcjonalny): 'overdue' | 'today' | 'upcoming' | 'all' - typ segmentacji, domyślnie 'all'
  * - days_ahead (opcjonalny): integer - liczba dni dla sekcji upcoming, domyślnie 7, min 1
  * - page (opcjonalny): integer - numer strony, domyślnie 1
  * - limit (opcjonalny): integer - liczba rekordów na stronę, domyślnie 20, max 100

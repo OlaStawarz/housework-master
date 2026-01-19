@@ -1,7 +1,7 @@
 # Plan implementacji widoku Dashboardu (Zadania)
 
 ## 1. Przegląd
-Widok Dashboardu jest głównym punktem wejścia dla zalogowanego użytkownika. Jego celem jest prezentacja najpilniejszych zadań z podziałem na "Zaległe" (Overdue) i "Nadchodzące" (Upcoming). Widok obsługuje również stan "Onboarding" dla nowych użytkowników (brak przestrzeni).
+Widok Dashboardu jest głównym punktem wejścia dla zalogowanego użytkownika. Jego celem jest prezentacja najpilniejszych zadań z podziałem na trzy sekcje: "Zaległe" (Overdue), "Dzisiaj" (Today) i "Nadchodzące" (Upcoming). Widok obsługuje również stan "Onboarding" dla nowych użytkowników (brak przestrzeni).
 
 ## 2. Routing widoku
 - **Ścieżka:** `/` (strona główna po zalogowaniu) lub `/dashboard`.
@@ -16,7 +16,12 @@ src/pages/index.astro (Layout: AppLayout)
     ├── OnboardingState (Widoczny, gdy brak przestrzeni)
     │   └── CreateSpaceButton (Przekierowuje na /spaces i otwiera CreateSpaceModal)
     ├── DashboardContent (Widoczny, gdy są przestrzenie)
-    │   ├── OverdueSection (Sekcja przeterminowanych)
+    │   ├── OverdueSection (Sekcja przeterminowanych - czerwona)
+    │   │   ├── SectionHeader (Tytuł, Licznik)
+    │   │   ├── TaskList (Lista zadań)
+    │   │   │   └── TaskCard (Karta zadania - reusing)
+    │   │   └── LoadMoreButton (Paginacja)
+    │   ├── TodaySection (Sekcja dzisiejszych - niebieska)
     │   │   ├── SectionHeader (Tytuł, Licznik)
     │   │   ├── TaskList (Lista zadań)
     │   │   │   └── TaskCard (Karta zadania - reusing)
@@ -44,23 +49,28 @@ src/pages/index.astro (Layout: AppLayout)
 
 ### `DashboardContent`
 - **Opis:** Wyświetla właściwą zawartość dashboardu podzieloną na sekcje.
-- **Główne elementy:** `OverdueSection`, `UpcomingSection`.
+- **Główne elementy:** `OverdueSection`, `TodaySection`, `UpcomingSection`.
 - **Warunki:** Renderuje się tylko, gdy użytkownik posiada przynajmniej jedną przestrzeń.
 
-### `TasksSection` (Reużywalny dla Overdue/Upcoming)
+### `TasksSection` (Reużywalny dla Overdue/Today/Upcoming)
 - **Opis:** Generyczna sekcja wyświetlająca listę zadań.
 - **Props:**
-  - `title`: string (np. "Zaległe", "Nadchodzące")
+  - `title`: string (np. "Zaległe", "Dzisiaj", "Nadchodzące")
   - `tasks`: TaskDto[]
   - `isLoading`: boolean
   - `onLoadMore`: () => void
   - `hasMore`: boolean
-- **Główne elementy:** Nagłówek sekcji, Grid/Lista kart `TaskCard`, przycisk "Pokaż więcej".
+  - `variant`: 'destructive' | 'info' | 'default' (dla kolorów sekcji)
+- **Główne elementy:** Nagłówek sekcji z charakterystycznym kolorem, Grid/Lista kart `TaskCard`, przycisk "Pokaż więcej".
+- **Warianty kolorystyczne:**
+  - `destructive` (czerwony) - dla sekcji Zaległe
+  - `info` (niebieski) - dla sekcji Dzisiaj
+  - `default` - dla sekcji Nadchodzące
 
 ### `TaskCard` (Rozbudowany)
 - **Opis:** Karta zadania (zgodna z poprzednimi planami implementacji Complete/Postpone).
 - **Props:** `task: TaskDto`.
-- **Elementy:** Nazwa, Ikona przestrzeni, Nazwa przestrzeni, Badge terminu (czerwony dla overdue, szary dla upcoming).
+- **Elementy:** Nazwa, Ikona przestrzeni, Nazwa przestrzeni, Badge terminu (czerwony dla overdue, niebieski dla today, szary dla upcoming).
 
 ## 5. Typy
 
@@ -71,8 +81,8 @@ Wykorzystanie typów z `src/types.ts`.
 ```typescript
 // Parametry dla hooka dashboardu
 interface UseDashboardTasksOptions {
-  section: 'overdue' | 'upcoming';
-  daysAhead?: number; // domyślnie 7
+  section: 'overdue' | 'today' | 'upcoming';
+  daysAhead?: number; // domyślnie 7, używane tylko dla 'upcoming'
   limit?: number; // domyślnie 20
 }
 
@@ -92,10 +102,11 @@ interface DashboardTasksResult {
 Stan zarządzany głównie przez **React Query** (TanStack Query).
 
 ### Hook: `useDashboardTasks(section)`
-Będzie to wrapper na `useInfiniteQuery` (dla obsługi "Load More") lub `useQuery` z paginacją. Ze względu na specyfikę dashboardu (dwa niezależne listy), rekomendowane jest użycie dwóch niezależnych zapytań.
+Będzie to wrapper na `useInfiniteQuery` (dla obsługi "Load More") lub `useQuery` z paginacją. Ze względu na specyfikę dashboardu (trzy niezależne listy), rekomendowane jest użycie trzech niezależnych zapytań.
 
 1.  **Query Key:** `['dashboard', 'tasks', 'overdue']`
-2.  **Query Key:** `['dashboard', 'tasks', 'upcoming']`
+2.  **Query Key:** `['dashboard', 'tasks', 'today']`
+3.  **Query Key:** `['dashboard', 'tasks', 'upcoming']`
 
 ### Hook: `useMySpaces`
 Potrzebny do sprawdzenia, czy użytkownik ma jakiekolwiek przestrzenie (logika Onboardingu).
@@ -107,11 +118,15 @@ Potrzebny do sprawdzenia, czy użytkownik ma jakiekolwiek przestrzenie (logika O
 
 1.  **Pobranie zaległych:**
     - **Query:** `?section=overdue&sort=due_date.asc&page=1&limit=20`
-    - **Cel:** Pokaż zadania, które są "najbardziej" przeterminowane (najstarsza data) na górze.
+    - **Cel:** Pokaż zadania przeterminowane (due_date < początek dzisiejszego dnia), posortowane od najstarszych.
 
-2.  **Pobranie nadchodzących:**
+2.  **Pobranie dzisiejszych:**
+    - **Query:** `?section=today&sort=due_date.asc&page=1&limit=20`
+    - **Cel:** Pokaż zadania z terminem na dzisiejszy dzień (due_date między początkiem a końcem dnia).
+
+3.  **Pobranie nadchodzących:**
     - **Query:** `?section=upcoming&days_ahead=7&sort=due_date.asc&page=1&limit=20`
-    - **Cel:** Pokaż zadania na najbliższe 7 dni, posortowane od tych na "już".
+    - **Cel:** Pokaż zadania na najbliższe 7 dni (od jutra), posortowane chronologicznie.
 
 ### Endpoint: `GET /api/spaces` (lub dedykowany check)
 - Służy do weryfikacji stanu "First Run". Jeśli lista przestrzeni jest pusta -> pokaż `OnboardingState`.
@@ -120,8 +135,9 @@ Potrzebny do sprawdzenia, czy użytkownik ma jakiekolwiek przestrzenie (logika O
 
 1.  **Pierwsze wejście (Pusty stan):** Użytkownik widzi zachętę do utworzenia przestrzeni.
 2.  **Codzienne użytkowanie:**
-    - Użytkownik widzi sekcję "Zaległe" (jeśli istnieją).
-    - Użytkownik widzi sekcję "Nadchodzące".
+    - Użytkownik widzi sekcję "Zaległe" (jeśli istnieją) - wyróżnioną czerwonym kolorem.
+    - Użytkownik widzi sekcję "Dzisiaj" (jeśli istnieją) - wyróżnioną niebieskim kolorem.
+    - Użytkownik widzi sekcję "Nadchodzące" (jeśli istnieją).
     - Użytkownik klika "Complete" na karcie (zadanie 'znika' z listy - obsługa przez `useCompleteTask`).
     - Użytkownik klika "Postpone" (zadanie przesuwa się na liście lub znika, jeśli data wykracza poza zakres - obsługa przez `usePostponeTask`).
 3.  **Ładowanie więcej:** Użytkownik klika "Pokaż więcej" pod listą, aby doładować kolejne strony (infinite query).
@@ -129,8 +145,10 @@ Potrzebny do sprawdzenia, czy użytkownik ma jakiekolwiek przestrzenie (logika O
 ## 9. Warunki i walidacja
 
 - **Onboarding:** Wyświetlany TYLKO gdy `spaces.length === 0`.
-- **Empty Inbox:** Wyświetlany gdy `spaces.length > 0` ORAZ `overdueTasks.length === 0` ORAZ `upcomingTasks.length === 0`.
+- **Empty Inbox:** Wyświetlany gdy `spaces.length > 0` ORAZ `overdueTasks.length === 0` ORAZ `todayTasks.length === 0` ORAZ `upcomingTasks.length === 0`.
 - **Overdue Section:** Ukryta, jeśli brak zadań przeterminowanych.
+- **Today Section:** Ukryta, jeśli brak zadań na dzisiaj.
+- **Upcoming Section:** Ukryta, jeśli brak zadań nadchodzących.
 
 ## 10. Obsługa błędów
 

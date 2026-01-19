@@ -282,12 +282,13 @@ Auth is backed by Supabase Auth.
 - Description: Aggregated tasks across all user spaces, segmented.
 - Headers: Authorization
 - Query:
-  - `section`: `overdue` | `upcoming` | `all` (default: `all`)
+  - `section`: `overdue` | `today` | `upcoming` | `all` (default: `all`)
   - `days_ahead`: integer (default: 7) for `upcoming`
   - `page`, `limit`, `sort` (default: `due_date.asc`)
 - Behavior:
-  - Overdue: tasks where `due_date < now` (computed at query-time).
-  - Upcoming: tasks with `due_date ≤ now + days_ahead`.
+  - Overdue: tasks where `due_date < start_of_today` (computed at query-time).
+  - Today: tasks where `due_date >= start_of_today` AND `due_date < end_of_today`.
+  - Upcoming: tasks with `due_date >= start_of_tomorrow` AND `due_date <= now + days_ahead`.
 - Response JSON (200): same list shape as GET /api/tasks.
 - Errors: 400, 401, 500.
 

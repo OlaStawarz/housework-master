@@ -8,10 +8,14 @@ Aplikacja składa się z głównego TopNavigation (desktop) i hamburger (mobile)
 
 ### Dashboard
 - Ścieżka: `/dashboard`
-- Główny cel: Wyświetlenie zadań przeterminowanych i zbliżających się dla szybkiego przeglądu priorytetów.
+- Główny cel: Wyświetlenie zadań przeterminowanych, dzisiejszych i zbliżających się dla szybkiego przeglądu priorytetów.
 - Kluczowe informacje: nazwa zadania, przestrzeń, badge z liczbą dni, komunikat motywacyjny.
 - Kluczowe komponenty: `TopNavigation`, `TaskList` (infinite scroll), `TaskCard`, `ToastProvider`.
-- UX, dostępność, bezpieczeństwo: sekcje oddzielone wizualnie, odpowiedni kontrast kolorów, ARIA labels dla kart i akcji, keyboard navigation.
+- Sekcje na dashboardzie:
+  - **Zaległe** (overdue) - zadania przeterminowane, wyróżnione kolorem czerwonym (destructive)
+  - **Dzisiaj** (today) - zadania z terminem na dzisiejszy dzień, wyróżnione kolorem niebieskim (blue/info)
+  - **Nadchodzące** (upcoming) - zadania z terminem w ciągu najbliższych 7 dni (od jutra)
+- UX, dostępność, bezpieczeństwo: sekcje oddzielone wizualnie z charakterystycznymi kolorami, odpowiedni kontrast kolorów, ARIA labels dla kart i akcji, keyboard navigation.
 
 ### Przestrzenie
 - Ścieżka: `/spaces`

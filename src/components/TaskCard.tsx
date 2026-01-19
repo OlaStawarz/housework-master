@@ -91,6 +91,7 @@ export function TaskCard({
 
   const dueDateInfo = formatDate(task.due_date, task.recurrence_unit);
   const isOverdue = dueDateInfo.variant === "destructive";
+  const isToday = dueDateInfo.text === "Dzisiaj";
   const isPostponeLimitReached = task.postponement_count >= 3;
 
   // Handler dla przycisku postpone - obsługuje zarówno desktop jak i mobile
@@ -112,12 +113,12 @@ export function TaskCard({
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-xl bg-card p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${isOverdue ? "bg-destructive/5" : ""} ${isCompleting ? "opacity-50 scale-[0.98] bg-muted" : ""}`}
+      className={`group relative overflow-hidden rounded-xl bg-card p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${isOverdue ? "bg-destructive/5" : isToday ? "bg-sky-50 dark:bg-sky-950/20" : ""} ${isCompleting ? "opacity-50 scale-[0.98] bg-muted" : ""}`}
       data-testid={`task-card-${task.name}`}
     >
       {/* Left accent bar */}
       <div
-        className={`absolute left-0 top-0 bottom-0 w-1.5 transition-colors ${isOverdue ? "bg-destructive/40 group-hover:bg-destructive" : "bg-primary/20 group-hover:bg-primary"}`}
+        className={`absolute left-0 top-0 bottom-0 w-1.5 transition-colors ${isOverdue ? "bg-destructive/40 group-hover:bg-destructive" : isToday ? "bg-sky-300/40 group-hover:bg-sky-400/60" : "bg-primary/20 group-hover:bg-primary"}`}
       />
 
       <div className="pl-3 flex items-start justify-between gap-4">
@@ -144,8 +145,8 @@ export function TaskCard({
                 className={`text-xs px-2 py-0.5 rounded-full ${
                   dueDateInfo.variant === "destructive"
                     ? "bg-destructive/10 text-destructive"
-                    : dueDateInfo.variant === "default"
-                      ? "bg-primary/10 text-primary"
+                    : isToday
+                      ? "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300"
                       : "bg-muted text-muted-foreground"
                 }`}
               >

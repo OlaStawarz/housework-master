@@ -41,7 +41,7 @@ Aplikacja ma na celu rozwiązanie tych problemów poprzez stworzenie prostego sy
 ### Widok zadań i nawigacja
 
 - Główny ekran aplikacji (Dashboard) wyświetla zagregowaną listę zadań ze wszystkich przestrzeni.
-- Lista na ekranie głównym jest podzielona na dwie sekcje: "Przeterminowane" i "Zbliżające się".
+- Lista na ekranie głównym jest podzielona na trzy sekcje: "Zaległe" (przeterminowane), "Dzisiaj" (termin na dziś) i "Nadchodzące" (zbliżające się).
 - Obie listy są sortowane chronologicznie (od najstarszego do najnowszego).
 - Użytkownik może wejść do konkretnej przestrzeni, aby zobaczyć listę zadań tylko z tej grupy.
 - Przy każdym zadaniu na liście wyświetlana jest liczba dni, jaka pozostała do terminu wykonania (lub minęła od terminu).
@@ -213,10 +213,11 @@ Aplikacja ma na celu rozwiązanie tych problemów poprzez stworzenie prostego sy
 **Opis:** Jako użytkownik, chcę widzieć na ekranie głównym listę wszystkich moich zadań posortowaną według terminu, abym mógł szybko zorientować się, co jest najpilniejsze.
 
 **Kryteria akceptacji:**
-- Ekran główny zawiera dwie listy: "Przeterminowane" i "Zbliżające się".
-- Na liście "Przeterminowane" znajdują się zadania, których termin minął, posortowane od najdłużej zaległego.
-- Na liście "Zbliżające się" znajdują się zadania, których termin wkrótce nadejdzie, posortowane od najpilniejszego.
-- Każdy element listy zawiera: nazwę zadania, nazwę przestrzeni oraz informację o terminie (np. "Zostały 2 dni", "Po terminie 5 dni").
+- Ekran główny zawiera trzy listy: "Zaległe", "Dzisiaj" i "Nadchodzące".
+- Na liście "Zaległe" znajdują się zadania, których termin minął (przed dzisiejszą datą), posortowane od najdłużej zaległego. Sekcja wyróżniona kolorem czerwonym.
+- Na liście "Dzisiaj" znajdują się zadania, których termin przypada na dzisiejszy dzień, posortowane chronologicznie. Sekcja wyróżniona kolorem niebieskim.
+- Na liście "Nadchodzące" znajdują się zadania, których termin nadejdzie w ciągu najbliższych 7 dni (od jutra), posortowane od najpilniejszego.
+- Każdy element listy zawiera: nazwę zadania, nazwę przestrzeni oraz informację o terminie (np. "Zostały 2 dni", "Po terminie 5 dni", "Dzisiaj").
 
 #### US-013: Przeglądanie listy przestrzeni
 

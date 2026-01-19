@@ -103,7 +103,7 @@ describe('DashboardContainer', () => {
       json: async () => ({ data: [{ id: 's1' }] }),
     });
 
-    // Mock useDashboardTasks dla różnych wywołań
+    // Mock useDashboardTasks dla różnych wywołań (overdue, today, upcoming)
     (useDashboardTasks as any).mockImplementation(({ section }: any) => {
       if (section === 'overdue') {
         return {
@@ -113,9 +113,17 @@ describe('DashboardContainer', () => {
           refetch: vi.fn(),
         };
       }
+      if (section === 'today') {
+        return {
+          tasks: [{ id: 't2', name: 'Dzisiejsze zadanie' }],
+          isLoading: false,
+          error: null,
+          refetch: vi.fn(),
+        };
+      }
       if (section === 'upcoming') {
         return {
-          tasks: [{ id: 't2', name: 'Przyszłe zadanie' }],
+          tasks: [{ id: 't3', name: 'Przyszłe zadanie' }],
           isLoading: false,
           error: null,
           refetch: vi.fn(),
@@ -129,6 +137,8 @@ describe('DashboardContainer', () => {
     await waitFor(() => {
       expect(screen.getByText('Zaległe (1)')).toBeInTheDocument();
       expect(screen.getByText('Zaległe zadanie')).toBeInTheDocument();
+      expect(screen.getByText('Dzisiaj (1)')).toBeInTheDocument();
+      expect(screen.getByText('Dzisiejsze zadanie')).toBeInTheDocument();
       expect(screen.getByText('Nadchodzące (1)')).toBeInTheDocument();
       expect(screen.getByText('Przyszłe zadanie')).toBeInTheDocument();
     });
@@ -150,6 +160,14 @@ describe('DashboardContainer', () => {
           refetch: vi.fn(),
         };
       }
+      if (section === 'today') {
+        return {
+          tasks: [],
+          isLoading: false,
+          error: null,
+          refetch: vi.fn(),
+        };
+      }
       // Dodajemy zadanie tutaj, aby hasNoTasks było false
       if (section === 'upcoming') {
         return {
@@ -166,6 +184,40 @@ describe('DashboardContainer', () => {
     
     await waitFor(() => {
       expect(screen.getByText('Błąd pobierania')).toBeInTheDocument();
+    });
+  });
+
+  it('renders only Today section when only today tasks exist', async () => {
+    // Mock fetch zwracający przestrzenie
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ data: [{ id: 's1' }] }),
+    });
+
+    (useDashboardTasks as any).mockImplementation(({ section }: any) => {
+      if (section === 'today') {
+        return {
+          tasks: [{ id: 't1', name: 'Zadanie na dzisiaj' }],
+          isLoading: false,
+          error: null,
+          refetch: vi.fn(),
+        };
+      }
+      return { 
+        tasks: [], 
+        isLoading: false, 
+        error: null, 
+        refetch: vi.fn() 
+      };
+    });
+
+    render(<DashboardContainer />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Dzisiaj (1)')).toBeInTheDocument();
+      expect(screen.getByText('Zadanie na dzisiaj')).toBeInTheDocument();
+      expect(screen.queryByText(/Zaległe/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Nadchodzące/)).not.toBeInTheDocument();
     });
   });
 });

@@ -11,7 +11,7 @@ export function DashboardContainer() {
   const [hasSpaces, setHasSpaces] = useState<boolean | null>(null);
   const [isCheckingSpaces, setIsCheckingSpaces] = useState(true);
 
-  // Pobieranie zadań dla obu sekcji
+  // Pobieranie zadań dla trzech sekcji
   const {
     tasks: overdueTasks,
     isLoading: isLoadingOverdue,
@@ -22,6 +22,19 @@ export function DashboardContainer() {
     isLoadingMore: isLoadingMoreOverdue,
   } = useDashboardTasks({
     section: "overdue",
+    enabled: hasSpaces === true,
+  });
+
+  const {
+    tasks: todayTasks,
+    isLoading: isLoadingToday,
+    error: todayError,
+    refetch: refetchToday,
+    loadMore: loadMoreToday,
+    hasMore: hasMoreToday,
+    isLoadingMore: isLoadingMoreToday,
+  } = useDashboardTasks({
+    section: "today",
     enabled: hasSpaces === true,
   });
 
@@ -45,6 +58,7 @@ export function DashboardContainer() {
       // Odświeżenie po 3 sekundach
       setTimeout(() => {
         refetchOverdue();
+        refetchToday();
         refetchUpcoming();
       }, 3000);
     },
@@ -52,6 +66,7 @@ export function DashboardContainer() {
       // Odświeżenie po 3 sekundach
       setTimeout(() => {
         refetchOverdue();
+        refetchToday();
         refetchUpcoming();
       }, 3000);
     },
@@ -110,10 +125,10 @@ export function DashboardContainer() {
   }
 
   // Stan ładowania zadań
-  const isLoadingTasks = isLoadingOverdue || isLoadingUpcoming;
+  const isLoadingTasks = isLoadingOverdue || isLoadingToday || isLoadingUpcoming;
 
   // Są przestrzenie, ale brak zadań (po załadowaniu)
-  const hasNoTasks = !isLoadingTasks && overdueTasks.length === 0 && upcomingTasks.length === 0;
+  const hasNoTasks = !isLoadingTasks && overdueTasks.length === 0 && todayTasks.length === 0 && upcomingTasks.length === 0;
 
   if (hasNoTasks) {
     return (
@@ -187,6 +202,49 @@ export function DashboardContainer() {
                     <div className="mt-4 text-center">
                       <Button variant="outline" onClick={loadMoreOverdue} disabled={isLoadingMoreOverdue}>
                         {isLoadingMoreOverdue ? "Ładowanie..." : "Pokaż więcej"}
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </section>
+          )}
+
+          {/* Sekcja Dzisiaj */}
+          {(todayTasks.length > 0 || todayError) && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold">
+                  Dzisiaj {todayTasks.length > 0 && `(${todayTasks.length})`}
+                </h2>
+              </div>
+
+              {todayError && (
+                <div className="p-4 border border-sky-200 rounded-lg bg-sky-50 dark:bg-sky-950/20 dark:border-sky-800">
+                  <p className="text-sky-700 dark:text-sky-300">{todayError}</p>
+                </div>
+              )}
+
+              {!todayError && todayTasks.length > 0 && (
+                <>
+                  <div className="space-y-3">
+                    {todayTasks.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        onComplete={handleComplete}
+                        onPostpone={handlePostpone}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
+                        hideActions
+                        showSpaceName
+                      />
+                    ))}
+                  </div>
+                  {hasMoreToday && (
+                    <div className="mt-4 text-center">
+                      <Button variant="outline" onClick={loadMoreToday} disabled={isLoadingMoreToday}>
+                        {isLoadingMoreToday ? "Ładowanie..." : "Pokaż więcej"}
                       </Button>
                     </div>
                   )}

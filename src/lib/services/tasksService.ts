@@ -811,7 +811,7 @@ export async function deleteTask(
 
 /**
  * Pobiera zagregowane zadania ze wszystkich przestrzeni użytkownika z możliwością segmentacji
- * na trzy kategorie: overdue (przeterminowane), upcoming (nadchodzące), all (wszystkie)
+ * na cztery kategorie: overdue (przeterminowane), today (dzisiejsze), upcoming (nadchodzące), all (wszystkie)
  * 
  * @param supabase - Klient Supabase
  * @param params - Parametry GetDashboardTasksParams (userId, filters)
@@ -851,15 +851,29 @@ export async function getDashboardTasks(
 
   // Logika warunkowego filtrowania w zależności od sekcji
   const now = new Date();
+  
+  // Obliczenie początku i końca dnia dla filtrowania "today"
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  
+  const endOfToday = new Date(now);
+  endOfToday.setHours(23, 59, 59, 999);
+  
+  const startOfTomorrow = new Date(startOfToday);
+  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
 
   if (section === 'overdue') {
-    // Przeterminowane: due_date < now
-    query = query.lt('due_date', now.toISOString());
+    // Przeterminowane: due_date < początek dzisiejszego dnia
+    query = query.lt('due_date', startOfToday.toISOString());
+  } else if (section === 'today') {
+    // Dzisiejsze: due_date >= początek dnia AND due_date <= koniec dnia
+    query = query.gte('due_date', startOfToday.toISOString());
+    query = query.lte('due_date', endOfToday.toISOString());
   } else if (section === 'upcoming') {
-    // Nadchodzące: due_date >= now AND due_date <= now + days_ahead
-    const targetDate = new Date(now);
+    // Nadchodzące: due_date >= początek jutra AND due_date <= teraz + days_ahead
+    const targetDate = new Date(startOfTomorrow);
     targetDate.setDate(targetDate.getDate() + days_ahead);
-    query = query.gte('due_date', now.toISOString());
+    query = query.gte('due_date', startOfTomorrow.toISOString());
     query = query.lte('due_date', targetDate.toISOString());
   }
   // Dla 'all': brak dodatkowego filtrowania po due_date
